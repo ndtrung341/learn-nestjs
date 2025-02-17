@@ -1,0 +1,29 @@
+### GET ALL USERS
+GET http://localhost:3000/users
+
+### GET A USER BY ID
+GET http://localhost:3000/users/1
+
+### CREATE NEW USER
+### 'phone' will be removed by `whitelist`
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "displayName": "Duy Trung",
+  "email": "trung@mail.com",
+  "password": "trung_handsome",
+  "phone": "0123456789" 
+}
+
+### UPDATE USER
+PATCH http://localhost:3000/users/1
+Content-Type: application/json
+
+{
+  "displayName": "Doraemon",
+  "password": "Doraemon"
+}
+
+### DELETE USER
+DELETE http://localhost:3000/users/1
