@@ -1,53 +1,46 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { RegisterDto } from 'src/auth/dto/register.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
-  private usersMock = [
+  private users = [
     {
       id: 1,
-      displayName: 'John Doe',
-      email: 'john@mail.com',
-      password: 'abc123',
-    },
-    {
-      id: 2,
-      displayName: 'Jane Smith',
-      email: 'jane@example.com',
-      password: '456xyz',
+      email: 'trung@example.com',
+      fullName: 'John Doe',
+      password: '$2b$10$CoPYheD54q9.ohPUwmU3wuEDyhWZstUAK0CHSGaziiSvOEVapfcW6',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ];
 
-  create(createUserDto: CreateUserDto) {
+  findById(id: number) {
+    const user = this.users.find((u) => u.id == id);
+    if (!user) throw new NotFoundException();
+    return user;
+  }
+
+  findByEmail(email: string) {
+    return this.users.find((u) => u.email === email);
+  }
+
+  create(data: RegisterDto) {
     const user = {
-      id: this.usersMock.length + 1,
-      ...createUserDto,
+      ...data,
+      id: this.users.length + 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
-    this.usersMock.push(user);
+    this.users.push(user);
     return user;
   }
 
-  findAll() {
-    return this.usersMock;
-  }
-
-  findOne(id: number) {
-    const user = this.usersMock.find((u) => u.id == id);
-    if (!user) throw new NotFoundException();
+  updateProfile(id: number, data: UserDto) {
+    const user = this.findById(id);
+    if (user) {
+      Object.assign(user, { ...data, updatedAt: new Date() });
+    }
     return user;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    const user = this.usersMock.find((u) => u.id == id);
-    if (!user) throw new NotFoundException();
-    Object.assign(user, updateUserDto);
-    return user;
-  }
-
-  remove(id: number) {
-    const userIndex = this.usersMock.findIndex((u) => u.id == id);
-    if (userIndex == -1) throw new NotFoundException();
-    this.usersMock.splice(userIndex, 1);
   }
 }
