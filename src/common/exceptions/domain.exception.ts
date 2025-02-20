@@ -21,3 +21,9 @@ export class InvalidPasswordException extends DomainException {
     super('Password is incorrect.');
   }
 }
+
+export class MailSendException extends DomainException {
+  constructor(message: string = 'Failed to send email') {
+    super(message);
+  }
+}

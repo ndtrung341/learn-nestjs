@@ -13,10 +13,14 @@ import {
 } from 'src/common/exceptions/domain.exception';
 import { plainToClass } from 'class-transformer';
 import { UserDto } from 'src/users/dto/user.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private mailService: MailService,
+  ) {}
 
   async register(registerDto: RegisterDto) {
     const existingUser = await this.userService.findByEmail(registerDto.email);
@@ -30,6 +34,12 @@ export class AuthService {
       ...registerDto,
       password: passwordHash,
     });
+
+    await this.mailService.sendMail(
+      user.email,
+      'Welcome to Our App',
+      `Hi ${user.fullName}. Have a nice day.`,
+    );
 
     return plainToClass(UserDto, user, { excludeExtraneousValues: true });
   }

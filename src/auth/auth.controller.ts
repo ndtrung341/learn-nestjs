@@ -43,6 +43,8 @@ export class AuthController {
       if (error instanceof EmailAlreadyExistsException) {
         throw new ConflictException(error.message);
       }
+
+      console.log(error);
     }
   }
 }
