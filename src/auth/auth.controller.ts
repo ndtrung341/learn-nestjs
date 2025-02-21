@@ -2,7 +2,6 @@ import {
   Body,
   ConflictException,
   Controller,
-  Inject,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -17,7 +16,7 @@ import {
 
 @Controller('auth')
 export class AuthController {
-  constructor(@Inject('AUTH') private authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {

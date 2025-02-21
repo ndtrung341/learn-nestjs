@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -14,12 +14,13 @@ import {
 import { plainToClass } from 'class-transformer';
 import { UserDto } from 'src/users/dto/user.dto';
 import { MailService } from 'src/mail/mail.service';
+import { ProviderToken } from 'src/common/constants/provider-token';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
-    private mailService: MailService,
+    @Inject(ProviderToken.MAIL_SERVICE_ALIAS) private mailService: MailService,
   ) {}
 
   async register(registerDto: RegisterDto) {

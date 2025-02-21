@@ -1,0 +1,5 @@
+export enum ProviderToken {
+  MAIL_CONFIG = 'MAIL_CONFIG',
+  MAIL_CLIENT = 'MAIL_CLIENT',
+  MAIL_SERVICE_ALIAS = 'MAIL_SERVICE_ALIAS',
+}
