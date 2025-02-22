@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailModule } from './mail/mail.module';
+import { LoggerService } from './common/services/logger.service';
+import { ApiTrackerService } from './common/services/api-tracker.service';
 
 @Module({
   imports: [
@@ -32,6 +34,6 @@ import { MailModule } from './mail/mail.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, LoggerService, ApiTrackerService],
 })
 export class AppModule {}
