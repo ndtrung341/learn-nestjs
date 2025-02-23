@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
-import { UserNotFoundException } from 'src/common/exceptions/domain.exception';
+import { UserNotFound } from 'src/common/exceptions/domain.exception';
 import { plainToInstance } from 'class-transformer';
 
 @Controller('users')
@@ -23,7 +23,7 @@ export class UsersController {
         excludeExtraneousValues: true,
       });
     } catch (error) {
-      if (error instanceof UserNotFoundException) {
+      if (error instanceof UserNotFound) {
         throw new NotFoundException('User not found');
       }
     }
@@ -37,7 +37,7 @@ export class UsersController {
         excludeExtraneousValues: true,
       });
     } catch (error) {
-      if (error instanceof UserNotFoundException) {
+      if (error instanceof UserNotFound) {
         throw new NotFoundException('User not found');
       }
     }

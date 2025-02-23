@@ -2,7 +2,7 @@
 GET http://localhost:3000/users/1
 
 ### UPDATE USER
-PUT http://localhost:3000/users/1
+PUT http://localhost:3000/users/3
 Content-Type: application/json
 
 {

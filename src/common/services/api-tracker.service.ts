@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { v4 as uuid } from 'uuid';
+import { nanoid } from 'nanoid';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ApiTrackerService {
@@ -11,7 +11,7 @@ export class ApiTrackerService {
   private status: 'pending' | 'success' | 'failed';
 
   constructor(@Inject(REQUEST) private request: Request) {
-    this.requestId = uuid();
+    this.requestId = nanoid(6);
     console.log(`🔍 New API tracker created - Request ID: ${this.requestId}`);
   }
 

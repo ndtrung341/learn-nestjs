@@ -8,8 +8,18 @@ export class UsersService {
     {
       id: 1,
       email: 'trung@example.com',
-      fullName: 'John Doe',
+      fullName: 'Duy Trung',
       password: '$2b$10$CoPYheD54q9.ohPUwmU3wuEDyhWZstUAK0CHSGaziiSvOEVapfcW6',
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 2,
+      email: 'musk@example.com',
+      fullName: 'Elon Musk',
+      password: '$2b$10$CoPYheD54q9.ohPUwmU3wuEDyhWZstUAK0CHSGaziiSvOEVapfcW6',
+      verified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -29,6 +39,7 @@ export class UsersService {
     const user = {
       ...data,
       id: this.users.length + 1,
+      verified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
