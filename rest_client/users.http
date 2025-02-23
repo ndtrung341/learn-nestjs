@@ -1,5 +1,5 @@
 ### GET A USER BY ID
-GET http://localhost:3000/users/1
+GET http://localhost:3000/users/3
 
 ### UPDATE USER
 PUT http://localhost:3000/users/3

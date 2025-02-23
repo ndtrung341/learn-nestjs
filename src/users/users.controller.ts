@@ -32,7 +32,7 @@ export class UsersController {
   @Put(':id')
   updateUser(@Param('id') id: number, @Body() userDto: UserDto) {
     try {
-      const user = this.usersService.updateProfile(id, userDto);
+      const user = this.usersService.update(id, userDto);
       return plainToInstance(UserDto, user, {
         excludeExtraneousValues: true,
       });

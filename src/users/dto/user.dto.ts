@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { ProfessionalDto } from './professional.dto';
 import { PersonalDto } from './personal.dto';
@@ -9,6 +9,9 @@ export class UserDto {
 
   @Expose()
   email: string;
+
+  @Exclude()
+  verified: boolean;
 
   @Expose()
   @IsOptional()

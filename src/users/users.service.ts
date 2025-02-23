@@ -47,7 +47,7 @@ export class UsersService {
     return user;
   }
 
-  updateProfile(id: number, data: UserDto) {
+  update(id: number, data: Partial<UserDto>) {
     const user = this.findById(id);
     if (user) {
       Object.assign(user, { ...data, updatedAt: new Date() });
