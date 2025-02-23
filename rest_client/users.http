@@ -1,5 +1,6 @@
 ### GET A USER BY ID
-GET http://localhost:3000/users/3
+GET http://localhost:3000/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IkR1eSBUcnVuZyIsImlhdCI6MTc0MDMxMzg3MCwiZXhwIjoxNzQwMzEzOTMwfQ.KuK8Uw9Gtu80RpTzvbtCY1Sn04U-tQrE6f3eBy3kAdA
 
 ### UPDATE USER
 PUT http://localhost:3000/users/3

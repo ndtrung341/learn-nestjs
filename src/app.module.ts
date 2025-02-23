@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -7,9 +12,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailModule } from './mail/mail.module';
 import { LoggerService } from './common/services/logger.service';
 import { ApiTrackerService } from './common/services/api-tracker.service';
+import { AuthMiddleware } from './common/middlewares/auth.middleware';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+
     UsersModule,
     AuthModule,
 
@@ -36,4 +44,14 @@ import { ApiTrackerService } from './common/services/api-tracker.service';
   controllers: [AppController],
   providers: [AppService, LoggerService, ApiTrackerService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude({ path: 'auth/*path', method: RequestMethod.ALL })
+      .forRoutes({
+        path: '*',
+        method: RequestMethod.ALL,
+      });
+  }
+}

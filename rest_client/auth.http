@@ -13,8 +13,8 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-   "email": "mail@example.com",
-   "password": "Test@123"
+   "email": "trung@example.com",
+   "password": "Trung@341"
 }
 
 ### VERIFY EMAIL
