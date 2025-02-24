@@ -1,29 +1,26 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { plainToClass } from 'class-transformer';
-import { nanoid } from 'nanoid';
 import { UsersService } from '@modules/users/users.service';
 import { MailService } from '@modules/mail/mail.service';
 import { UserDto } from '@modules/users/dto/user.dto';
-import { ProviderToken } from '@common/constants/provider-token';
 import { comparePassword, hashPassword } from '@utils/password';
-import { LoginDto, RegisterDto } from './dto';
 import {
   EmailAlreadyExistsException,
   EmailNotVerifiedException,
   InvalidCredentialsException,
   InvalidVerificationTokenException,
 } from '@common/exceptions/auth.exception';
+import { LoginDto, RegisterDto } from '../dto';
+import { VerificationService } from './verification.service';
 
 @Injectable()
 export class AuthService {
-  private verificationTokens: Map<string, string> = new Map();
-
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
-    @Inject(ProviderToken.MAIL_SERVICE_ALIAS)
     private readonly mailService: MailService,
+    private readonly verificationService: VerificationService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -66,7 +63,7 @@ export class AuthService {
   }
 
   async verifyEmail(token: string) {
-    const userId = this.verificationTokens.get(token);
+    const userId = this.verificationService.validateToken(token);
     const user = userId ? await this.userService.findById(+userId) : null;
 
     if (!user) {
@@ -78,18 +75,17 @@ export class AuthService {
     }
 
     await this.userService.update(user.id, { verified: true });
-    this.verificationTokens.delete(token);
   }
 
   private async sendVerificationEmail(user: any): Promise<void> {
-    const token = nanoid(6);
-    this.verificationTokens.set(token, user.id.toString());
+    const token = this.verificationService.generateToken(user.id);
+    const url = this.verificationService.getVerificationUrl(token);
 
     await this.mailService.sendMail(
       user.email,
       'Verify Your Email',
       `Hi ${user.fullName}. Please verify your email by clicking this link: 
-      http://localhost:3000/auth/verify/${token}`,
+     ${url}`,
     );
   }
 }

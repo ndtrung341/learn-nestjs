@@ -14,9 +14,9 @@ Content-Type: application/json
 
 {
    "email": "mail@example.com",
-   "password": "Test@1233"
+   "password": "Test@123"
 }
 
 ### VERIFY EMAIL
-GET http://localhost:3000/auth/verify/_3PwEp
+GET http://localhost:3000/auth/verify/ggtQFa4y
 
