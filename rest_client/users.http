@@ -1,13 +1,13 @@
 ### GET A USER BY ID
 GET http://localhost:3000/users/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNzQwMzcxNjY5LCJleHAiOjE3NDAzNzE3Mjl9.KWcOjJn2mQHDUY3CqZxmkLQ_C_MOLBWpZbOXMNHBkY0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNTQ5MjUyOUEzNSIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTc0MDM5ODQ1MywiZXhwIjoxNzQwMzk4NTEzfQ.rXWKRSZ5iE9iXsiVF9BReLGGuTWyl_Wf3cja733GGj0
 
 ### UPDATE USER
-PUT http://localhost:3000/users/3
+PUT http://localhost:3000/users/1
 Content-Type: application/json
 
 {
-   "fullName": "Duy Trung",
+   "fullName": "Duy Trung 123",
    "bio": "Lorem ipsum",
    "avatar": "https://example.com/avatar.jpg",
    "personal": {

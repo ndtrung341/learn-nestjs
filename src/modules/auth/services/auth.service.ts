@@ -37,7 +37,7 @@ export class AuthService {
 
     await this.sendVerificationEmail(user);
 
-    return plainToClass(UserDto, user, { excludeExtraneousValues: true });
+    return user;
   }
 
   async login(loginDto: LoginDto) {
@@ -57,14 +57,14 @@ export class AuthService {
     });
 
     return {
-      user: plainToClass(UserDto, user, { excludeExtraneousValues: true }),
+      user,
       accessToken,
     };
   }
 
   async verifyEmail(token: string) {
     const userId = this.verificationService.validateToken(token);
-    const user = userId ? await this.userService.findById(+userId) : null;
+    const user = userId ? await this.userService.findById(userId) : null;
 
     if (!user) {
       throw new InvalidVerificationTokenException();

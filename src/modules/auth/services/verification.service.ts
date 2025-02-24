@@ -8,7 +8,7 @@ export class VerificationService {
 
   private readonly tokenMap = new Map<
     string,
-    { userId: number; expiresAt: Date }
+    { userId: string; expiresAt: Date }
   >();
 
   getVerificationUrl(token: string) {
@@ -16,7 +16,7 @@ export class VerificationService {
     return `${baseUrl}/auth/verify/${token}`;
   }
 
-  generateToken(userId: number) {
+  generateToken(userId: string) {
     const token = nanoid(8);
     const expiresAt = new Date();
 

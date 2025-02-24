@@ -8,18 +8,12 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get(':id')
-  getUser(@Param('id') id: number) {
-    const user = this.usersService.findById(id);
-    return plainToInstance(UserDto, user, {
-      excludeExtraneousValues: true,
-    });
+  getUser(@Param('id') id: string) {
+    return this.usersService.findById(id);
   }
 
   @Put(':id')
-  updateUser(@Param('id') id: number, @Body() userDto: UserDto) {
-    const user = this.usersService.update(id, userDto);
-    return plainToInstance(UserDto, user, {
-      excludeExtraneousValues: true,
-    });
+  updateUser(@Param('id') id: string, @Body() userDto: UserDto) {
+    return this.usersService.update(id, userDto);
   }
 }
