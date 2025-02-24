@@ -1,23 +1,19 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import {
-  comparePassword,
-  hashPassword,
-} from 'src/common/helpers/password.helper';
-import { plainToClass } from 'class-transformer';
-import { UserDto } from 'src/users/dto/user.dto';
-import { MailService } from 'src/mail/mail.service';
-import { ProviderToken } from 'src/common/constants/provider-token';
-import { nanoid } from 'nanoid';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { plainToClass } from 'class-transformer';
+import { nanoid } from 'nanoid';
+import { UsersService } from '@modules/users/users.service';
+import { MailService } from '@modules/mail/mail.service';
+import { UserDto } from '@modules/users/dto/user.dto';
+import { ProviderToken } from '@common/constants/provider-token';
+import { comparePassword, hashPassword } from '@utils/password';
+import { LoginDto, RegisterDto } from './dto';
+import {
+  EmailAlreadyExistsException,
+  EmailNotVerifiedException,
+  InvalidCredentialsException,
+  InvalidVerificationTokenException,
+} from '@common/exceptions/auth.exception';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +29,7 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const existingUser = await this.userService.findByEmail(registerDto.email);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new EmailAlreadyExistsException();
     }
 
     const passwordHash = await hashPassword(registerDto.password);
@@ -50,16 +46,12 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.userService.findByEmail(loginDto.email);
 
-    const isValid =
-      !!user && (await comparePassword(loginDto.password, user.password));
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid email or password');
+    if (!user || !(await comparePassword(loginDto.password, user.password))) {
+      throw new InvalidCredentialsException();
     }
 
     if (!user.verified) {
-      throw new BadRequestException(
-        'Please verify your email before logging in',
-      );
+      throw new EmailNotVerifiedException();
     }
 
     const accessToken = await this.jwtService.signAsync({
@@ -78,11 +70,11 @@ export class AuthService {
     const user = userId ? await this.userService.findById(+userId) : null;
 
     if (!user) {
-      throw new BadRequestException('Invalid or expired verification token');
+      throw new InvalidVerificationTokenException();
     }
 
     if (user.verified) {
-      throw new BadRequestException('Email has already been verified');
+      throw new EmailAlreadyExistsException();
     }
 
     await this.userService.update(user.id, { verified: true });
@@ -93,16 +85,11 @@ export class AuthService {
     const token = nanoid(6);
     this.verificationTokens.set(token, user.id.toString());
 
-    try {
-      await this.mailService.sendMail(
-        user.email,
-        'Verify Your Email',
-        `Hi ${user.fullName}. Please verify your email by clicking this link: 
+    await this.mailService.sendMail(
+      user.email,
+      'Verify Your Email',
+      `Hi ${user.fullName}. Please verify your email by clicking this link: 
       http://localhost:3000/auth/verify/${token}`,
-      );
-    } catch (error) {
-      this.verificationTokens.delete(token);
-      throw new BadRequestException('Failed to send email');
-    }
+    );
   }
 }

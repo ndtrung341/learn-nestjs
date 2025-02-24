@@ -1,7 +1,7 @@
 import { Controller, Get, Scope } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ApiTrackerService } from './common/services/api-tracker.service';
-import { LoggerService } from './common/services/logger.service';
+import { ApiTrackerService } from '@common/services/api-tracker.service';
+import { LoggerService } from '@common/services/logger.service';
 
 @Controller({ scope: Scope.DEFAULT })
 export class AppController {

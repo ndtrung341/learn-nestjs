@@ -6,13 +6,15 @@ import {
 } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MailModule } from './mail/mail.module';
-import { LoggerService } from './common/services/logger.service';
-import { ApiTrackerService } from './common/services/api-tracker.service';
-import { AuthMiddleware } from './common/middlewares/auth.middleware';
+
+import { UsersModule } from '@modules/users/users.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { MailModule } from '@modules/mail/mail.module';
+
+import { LoggerService } from '@common/services/logger.service';
+import { ApiTrackerService } from '@common/services/api-tracker.service';
+import { AuthMiddleware } from '@common/middlewares/auth.middleware';
 
 @Module({
   imports: [

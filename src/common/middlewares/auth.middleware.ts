@@ -1,33 +1,33 @@
 import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+  InvalidTokenException,
+  MissingTokenException,
+} from '@common/exceptions/auth.exception';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   async use(req: Request, res: any, next: () => void) {
-    const [type, token] = req.headers.authorization?.split(' ') ?? [];
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new MissingTokenException();
+    }
+
+    const [type, token] = authHeader.split(' ');
 
     if (type !== 'Bearer') {
-      throw new UnauthorizedException('Invalid token');
+      throw new InvalidTokenException();
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get('JWT_SECRET', 'Trung handsome'),
-      });
+      const payload = await this.jwtService.verifyAsync(token);
       req['user'] = payload;
     } catch {
-      throw new UnauthorizedException('Invalid token');
+      throw new InvalidTokenException();
     }
 
     next();

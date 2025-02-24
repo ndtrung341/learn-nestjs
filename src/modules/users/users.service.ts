@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { RegisterDto } from 'src/auth/dto/register.dto';
+import { Injectable } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
+import { RegisterDto } from '@modules/auth/dto';
+import { UserNotFoundException } from '@common/exceptions/user.exception';
 
 @Injectable()
 export class UsersService {
@@ -26,13 +27,16 @@ export class UsersService {
   ];
 
   findById(id: number) {
-    const user = this.users.find((u) => u.id == id);
-    if (!user) throw new NotFoundException();
+    const user = this.users.find((u) => u.id === id);
+    if (!user) {
+      throw new UserNotFoundException(`User with ID ${id} not found`);
+    }
     return user;
   }
 
   findByEmail(email: string) {
-    return this.users.find((u) => u.email === email);
+    const user = this.users.find((u) => u.email === email);
+    return user;
   }
 
   create(data: RegisterDto) {
@@ -49,9 +53,7 @@ export class UsersService {
 
   update(id: number, data: Partial<UserDto>) {
     const user = this.findById(id);
-    if (user) {
-      Object.assign(user, { ...data, updatedAt: new Date() });
-    }
+    Object.assign(user, { ...data, updatedAt: new Date() });
     return user;
   }
 }

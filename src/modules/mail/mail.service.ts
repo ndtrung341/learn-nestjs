@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IMailClient, IMailConfig } from './mail.interface';
-import { MailSendFailed } from 'src/common/exceptions/domain.exception';
+import { MailSendFailedException } from '@common/exceptions/mail.exception';
 
 @Injectable()
 export class MailService {
@@ -19,7 +19,7 @@ export class MailService {
         subject,
         error: error.message,
       });
-      throw new MailSendFailed(
+      throw new MailSendFailedException(
         `Failed to send email to ${to}: ${error.message}`,
       );
     }
