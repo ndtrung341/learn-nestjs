@@ -1,41 +1,41 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
-  IsBoolean,
-  IsEmail,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
+   IsBoolean,
+   IsEmail,
+   IsOptional,
+   IsString,
+   IsUrl,
+   ValidateNested,
 } from 'class-validator';
 import { ProfessionalDto } from './professional.dto';
 import { PersonalDto } from './personal.dto';
 
 export class UserDto {
-  @IsOptional()
-  @IsEmail()
-  email: string;
+   @IsOptional()
+   @IsEmail()
+   email: string;
 
-  @IsOptional()
-  @IsString()
-  fullName: string;
+   @IsOptional()
+   @IsString()
+   fullName: string;
 
-  @IsOptional()
-  @IsBoolean()
-  verified?: boolean;
+   @IsOptional()
+   @IsBoolean()
+   verified?: boolean;
 
-  @IsOptional()
-  @IsString()
-  bio?: string;
+   @IsOptional()
+   @IsString()
+   bio?: string;
 
-  @IsOptional()
-  @IsUrl()
-  avatar?: string;
+   @IsOptional()
+   @IsUrl()
+   avatar?: string;
 
-  @ValidateNested()
-  @Type(() => PersonalDto)
-  personal?: PersonalDto;
+   @ValidateNested()
+   @Type(() => PersonalDto)
+   personal?: PersonalDto;
 
-  @ValidateNested()
-  @Type(() => ProfessionalDto)
-  professional?: ProfessionalDto;
+   @ValidateNested()
+   @Type(() => ProfessionalDto)
+   professional?: ProfessionalDto;
 }

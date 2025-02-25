@@ -7,18 +7,20 @@ import { VerificationService } from './services/verification.service';
 import { AuthService } from './services/auth.service';
 
 @Module({
-  controllers: [AuthController],
-  imports: [
-    UsersModule,
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET', 'Trung handsome'),
-        signOptions: { expiresIn: config.get('JWT_EXPIRES', '60s') },
+   controllers: [AuthController],
+   imports: [
+      UsersModule,
+      JwtModule.registerAsync({
+         inject: [ConfigService],
+         useFactory: (config: ConfigService) => ({
+            secret: config.get('JWT_SECRET', 'Trung handsome'),
+            signOptions: {
+               expiresIn: config.get('JWT_EXPIRES', '60s'),
+            },
+         }),
       }),
-    }),
-  ],
-  exports: [JwtModule],
-  providers: [AuthService, VerificationService],
+   ],
+   exports: [JwtModule],
+   providers: [AuthService, VerificationService],
 })
 export class AuthModule {}

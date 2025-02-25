@@ -5,15 +5,15 @@ import { UserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+   constructor(private readonly usersService: UsersService) {}
 
-  @Get(':id')
-  getUser(@Param('id') id: string) {
-    return this.usersService.findById(id);
-  }
+   @Get(':id')
+   getUser(@Param('id') id: string) {
+      return this.usersService.findById(id);
+   }
 
-  @Put(':id')
-  updateUser(@Param('id') id: string, @Body() userDto: UserDto) {
-    return this.usersService.update(id, userDto);
-  }
+   @Put(':id')
+   updateUser(@Param('id') id: string, @Body() userDto: UserDto) {
+      return this.usersService.update(id, userDto);
+   }
 }
