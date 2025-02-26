@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { ApiTrackerService } from '@common/services/api-tracker.service';
 import { LoggerService } from '@common/services/logger.service';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
 @Controller({ scope: Scope.DEFAULT })
 export class AppController {
@@ -35,6 +36,12 @@ export class AppController {
    @Get('test-passport-local')
    @UseGuards(LocalAuthGuard)
    testLocal(@Req() request) {
+      return request.user;
+   }
+
+   @Get('test-passport-jwt')
+   @UseGuards(JwtAuthGuard)
+   testJwt(@Req() request) {
       return request.user;
    }
 }

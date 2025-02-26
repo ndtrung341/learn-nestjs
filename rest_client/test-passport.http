@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwNTcwODY3LCJleHAiOjE3NDA1NzA5Mjd9.5D-JP6PEYGW_g9ZuxEw3IXwqcR4ywIyxbfrc2jffVas
 
 ### LOCAL 
 GET  {{baseUrl}}/test-passport-local
@@ -9,3 +10,6 @@ Content-Type: application/json
    "password": "Trung@341"
 }
 
+### JWT
+GET  {{baseUrl}}/test-passport-jwt
+Authorization: Bearer {{token}}
