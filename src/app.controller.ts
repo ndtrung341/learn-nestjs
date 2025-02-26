@@ -1,7 +1,8 @@
-import { Controller, Get, Scope } from '@nestjs/common';
+import { Controller, Get, Req, Scope, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTrackerService } from '@common/services/api-tracker.service';
 import { LoggerService } from '@common/services/logger.service';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 @Controller({ scope: Scope.DEFAULT })
 export class AppController {
@@ -29,5 +30,11 @@ export class AppController {
       this.apiTracker.startTrack();
       await new Promise((resovle) => setTimeout(resovle, 2000));
       this.apiTracker.endTrack(false);
+   }
+
+   @Get('test-passport-local')
+   @UseGuards(LocalAuthGuard)
+   testLocal(@Req() request) {
+      return request.user;
    }
 }

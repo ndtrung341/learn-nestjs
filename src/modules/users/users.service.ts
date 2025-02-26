@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
-import { RegisterDto } from '@modules/auth/dto';
+import { RegisterDto } from '@auth/dto';
 import { UserNotFoundException } from '@common/exceptions/user.exception';
 import { UsersRepository } from './repositories/user.repository';
 

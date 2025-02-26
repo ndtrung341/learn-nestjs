@@ -43,9 +43,9 @@ export class AuthService {
    }
 
    async login(loginDto: LoginDto) {
-      const user = await this.userService.findByEmail(loginDto.email);
+      const user = await this.validateUser(loginDto.email, loginDto.password);
 
-      if (!user || !(await comparePassword(loginDto.password, user.password))) {
+      if (!user) {
          throw new InvalidCredentialsException();
       }
 
@@ -62,6 +62,16 @@ export class AuthService {
          user,
          accessToken,
       };
+   }
+
+   async validateUser(email: string, password: string) {
+      const user = await this.userService.findByEmail(email);
+      if (user) {
+         const { password: passwordHash, ...result } = user;
+         const isPasswordValid = await comparePassword(password, passwordHash);
+         return isPasswordValid ? result : null;
+      }
+      return null;
    }
 
    async verifyEmail(token: string) {

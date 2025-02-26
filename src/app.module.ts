@@ -1,20 +1,14 @@
-import {
-   MiddlewareConsumer,
-   Module,
-   NestModule,
-   RequestMethod,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { UsersModule } from '@modules/users/users.module';
-import { AuthModule } from '@modules/auth/auth.module';
+import { AuthModule } from '@auth/auth.module';
 import { MailModule } from '@modules/mail/mail.module';
 
 import { LoggerService } from '@common/services/logger.service';
 import { ApiTrackerService } from '@common/services/api-tracker.service';
-import { AuthMiddleware } from '@common/middlewares/auth.middleware';
 import configuration from '@config/configuration';
 import { BasicDatabaseModule } from './database/basic-database.module';
 
@@ -64,14 +58,4 @@ import { BasicDatabaseModule } from './database/basic-database.module';
    controllers: [AppController],
    providers: [AppService, LoggerService, ApiTrackerService],
 })
-export class AppModule implements NestModule {
-   configure(consumer: MiddlewareConsumer) {
-      // consumer
-      //    .apply(AuthMiddleware)
-      //    .exclude({ path: 'auth/*path', method: RequestMethod.ALL })
-      //    .forRoutes({
-      //       path: '*',
-      //       method: RequestMethod.ALL,
-      //    });
-   }
-}
+export class AppModule {}

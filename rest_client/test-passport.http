@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3000
+
+### LOCAL 
+GET  {{baseUrl}}/test-passport-local
+Content-Type: application/json
+
+{
+   "email": "trung@example.com",
+   "password": "Trung@341"
+}
+
