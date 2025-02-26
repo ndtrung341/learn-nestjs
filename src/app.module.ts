@@ -66,12 +66,12 @@ import { BasicDatabaseModule } from './database/basic-database.module';
 })
 export class AppModule implements NestModule {
    configure(consumer: MiddlewareConsumer) {
-      consumer
-         .apply(AuthMiddleware)
-         .exclude({ path: 'auth/*path', method: RequestMethod.ALL })
-         .forRoutes({
-            path: '*',
-            method: RequestMethod.ALL,
-         });
+      // consumer
+      //    .apply(AuthMiddleware)
+      //    .exclude({ path: 'auth/*path', method: RequestMethod.ALL })
+      //    .forRoutes({
+      //       path: '*',
+      //       method: RequestMethod.ALL,
+      //    });
    }
 }

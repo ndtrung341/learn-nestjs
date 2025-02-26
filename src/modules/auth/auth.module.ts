@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '@modules/users/users.module';
@@ -11,16 +11,19 @@ import { AuthService } from './services/auth.service';
    imports: [
       UsersModule,
       JwtModule.registerAsync({
+         global: true,
          inject: [ConfigService],
-         useFactory: (config: ConfigService) => ({
-            secret: config.get('JWT_SECRET', 'Trung handsome'),
-            signOptions: {
-               expiresIn: config.get('JWT_EXPIRES', '60s'),
-            },
-         }),
+         useFactory: (config: ConfigService) => {
+            console.log(config.get('jwt.expires'));
+            return {
+               secret: config.get('jwt.secret'),
+               signOptions: {
+                  expiresIn: config.get('jwt.expires'),
+               },
+            };
+         },
       }),
    ],
-   exports: [JwtModule],
    providers: [AuthService, VerificationService],
 })
 export class AuthModule {}

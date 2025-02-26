@@ -1,9 +1,13 @@
+@baseUrl = http://localhost:3000/users
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIyQTU0MzhEMDhFMSIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTc0MDU0NDAwNiwiZXhwIjoxNzQwNTQ0MDY2fQ.H7IRhhBD7LVz34UBzXJlW0zQP5Yopg3PpiSmT8rzi2c
+
 ### GET A USER BY ID
-GET http://localhost:3000/users/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNTQ5MjUyOUEzNSIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTc0MDM5ODQ1MywiZXhwIjoxNzQwMzk4NTEzfQ.rXWKRSZ5iE9iXsiVF9BReLGGuTWyl_Wf3cja733GGj0
+GET {{baseUrl}}/1
+Authorization: Bearer {{token}}
 
 ### UPDATE USER
-PUT http://localhost:3000/users/1
+PUT {{baseUrl}}/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
