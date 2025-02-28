@@ -1,22 +1,23 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { ConfigService } from '@nestjs/config';
 import { AuthService } from './services/auth.service';
+import { LoggerService } from '@common/services/logger.service';
 
 @Controller('auth')
 export class AuthController {
    constructor(
       private authService: AuthService,
-      private readonly config: ConfigService,
+      private logger: LoggerService,
    ) {}
 
    @Post('login')
    async login(@Body() loginDto: LoginDto) {
       const result = await this.authService.login(loginDto);
+      this.logger.info(result);
       return {
          message: 'Login successful',
-         user: result,
+         data: result,
       };
    }
 

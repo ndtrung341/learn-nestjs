@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwNTcwODY3LCJleHAiOjE3NDA1NzA5Mjd9.5D-JP6PEYGW_g9ZuxEw3IXwqcR4ywIyxbfrc2jffVas
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwNzA3ODE5LCJleHAiOjE3NDA3MDc4Nzl9.KixYb8Kb4uId37w1MnkSZ9nPx9HiliC4YvsPUgiRrT4
 
 ### LOCAL 
 GET  {{baseUrl}}/test-passport-local

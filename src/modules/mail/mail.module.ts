@@ -7,7 +7,7 @@ import {
    MailModuleAsyncOptions,
    MailModuleOptions,
 } from './mail.interface';
-import { ProviderToken } from '@common/constants/provider-token';
+import { ProviderToken } from 'constants/provider-token';
 
 @Module({})
 export class MailModule {

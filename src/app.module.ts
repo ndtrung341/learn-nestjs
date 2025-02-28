@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -7,10 +7,10 @@ import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@auth/auth.module';
 import { MailModule } from '@modules/mail/mail.module';
 
-import { LoggerService } from '@common/services/logger.service';
-import { ApiTrackerService } from '@common/services/api-tracker.service';
 import configuration from '@config/configuration';
-import { BasicDatabaseModule } from './database/basic-database.module';
+import { BasicDatabaseModule } from './db/basic-database.module';
+
+import { CommonModule } from '@common/common.module';
 
 @Module({
    imports: [
@@ -20,7 +20,7 @@ import { BasicDatabaseModule } from './database/basic-database.module';
          cache: true,
          expandVariables: true,
       }),
-
+      CommonModule,
       UsersModule,
       AuthModule,
 
@@ -50,12 +50,12 @@ import { BasicDatabaseModule } from './database/basic-database.module';
             host: configService.get('database.host')!,
             port: +configService.get('database.port')!,
             username: configService.get('database.username')!,
-            password: configService.get<string>('database.password')!,
-            database: configService.get<string>('database.database')!,
+            password: configService.get('database.password')!,
+            database: configService.get('database.database')!,
          }),
       }),
    ],
    controllers: [AppController],
-   providers: [AppService, LoggerService, ApiTrackerService],
+   providers: [AppService],
 })
 export class AppModule {}
