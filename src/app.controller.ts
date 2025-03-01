@@ -2,7 +2,6 @@ import {
    Controller,
    Get,
    Req,
-   Scope,
    UseGuards,
    UseInterceptors,
 } from '@nestjs/common';
@@ -10,6 +9,7 @@ import { AppService } from './app.service';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { LoggerInterceptor } from '@common/interceptors/logger.interceptor';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
 
 @Controller()
 @UseInterceptors(LoggerInterceptor)
@@ -23,8 +23,8 @@ export class AppController {
 
    @Get('test-passport-local')
    @UseGuards(LocalAuthGuard)
-   testLocal(@Req() request) {
-      return request.user;
+   testLocal(@CurrentUser() user) {
+      return user;
    }
 
    @Get('test-passport-jwt')

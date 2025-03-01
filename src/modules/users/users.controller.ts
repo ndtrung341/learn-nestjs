@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+   Body,
+   Controller,
+   Get,
+   Param,
+   Post,
+   Put,
+   UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { SimpleAuthGuard } from '@auth/guards/simple-auth.guard';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { Role } from '@constants/roles';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -20,9 +30,10 @@ export class UsersController {
       return this.usersService.update(id, userDto);
    }
 
-   @Get('test-passport-local')
-   @UseGuards(LocalAuthGuard)
-   testLocal(@Param('id') id: string) {
-      return this.usersService.findById(id);
+   @Post('block')
+   @UseGuards(JwtAuthGuard)
+   @Roles([Role.ADMIN])
+   blockUser() {
+      return 'Block successfully';
    }
 }

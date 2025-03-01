@@ -1,6 +1,7 @@
 import { BaseRepository } from '@common/repositories/base.repository';
 import { User } from '../entities/user.entity';
 import { Injectable } from '@nestjs/common';
+import { Role } from '@constants/roles';
 
 @Injectable()
 export class UsersRepository extends BaseRepository<User> {
@@ -13,6 +14,7 @@ export class UsersRepository extends BaseRepository<User> {
          password:
             '$2b$10$CoPYheD54q9.ohPUwmU3wuEDyhWZstUAK0CHSGaziiSvOEVapfcW6',
          verified: true,
+         role: Role.ADMIN,
          createdAt: new Date(),
          updatedAt: new Date(),
       },
@@ -22,7 +24,8 @@ export class UsersRepository extends BaseRepository<User> {
          fullName: 'Elon Musk',
          password:
             '$2b$10$CoPYheD54q9.ohPUwmU3wuEDyhWZstUAK0CHSGaziiSvOEVapfcW6',
-         verified: false,
+         verified: true,
+         role: Role.USER,
          createdAt: new Date(),
          updatedAt: new Date(),
       },

@@ -13,3 +13,6 @@ Content-Type: application/json
 ### JWT
 GET  {{baseUrl}}/test-passport-jwt
 Authorization: Bearer {{token}}
+
+### JWT
+GET  {{baseUrl}}/test-timeout

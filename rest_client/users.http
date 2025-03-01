@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000/users
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIyQTU0MzhEMDhFMSIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTc0MDU0NDAwNiwiZXhwIjoxNzQwNTQ0MDY2fQ.H7IRhhBD7LVz34UBzXJlW0zQP5Yopg3PpiSmT8rzi2c
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwODMwODMwLCJleHAiOjE3NDA4MzA4OTB9.BQthowclyON3mJG7bbeMrLE2oyfSQPyK8-rqD96F2As
 
 ### GET A USER BY ID
 GET {{baseUrl}}/1
@@ -23,3 +23,7 @@ Content-Type: application/json
       "position": "Employee"
    }
 }
+
+### 
+POST {{baseUrl}}/block
+Authorization: Bearer {{token}}
