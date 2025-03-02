@@ -23,7 +23,3 @@ Content-Type: application/json
       "position": "Employee"
    }
 }
-
-### 
-POST {{baseUrl}}/block
-Authorization: Bearer {{token}}
