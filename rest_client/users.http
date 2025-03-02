@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000/users
+@baseUrl = http://localhost:3000/api/users
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwODMwODMwLCJleHAiOjE3NDA4MzA4OTB9.BQthowclyON3mJG7bbeMrLE2oyfSQPyK8-rqD96F2As
 
 ### GET A USER BY ID

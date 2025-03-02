@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { plainToClass } from 'class-transformer';
 import { UsersService } from '@modules/users/users.service';
 import { MailService } from '@modules/mail/mail.service';
-import { UserDto } from '@modules/users/dto/user.dto';
 import { comparePassword, hashPassword } from '@utils/password';
 import {
    EmailAlreadyExistsException,
@@ -17,32 +15,34 @@ import { VerificationService } from './verification.service';
 @Injectable()
 export class AuthService {
    constructor(
-      private readonly userService: UsersService,
+      private readonly usersService: UsersService,
       private readonly jwtService: JwtService,
       private readonly mailService: MailService,
       private readonly verificationService: VerificationService,
    ) {}
 
-   async register(registerDto: RegisterDto) {
-      const existingUser = await this.userService.findByEmail(
+   // Register a new user and initiate email verification
+   async signup(registerDto: RegisterDto) {
+      const existingUser = await this.usersService.findByEmail(
          registerDto.email,
       );
       if (existingUser) {
          throw new EmailAlreadyExistsException();
       }
 
-      const passwordHash = await hashPassword(registerDto.password);
-      const user = await this.userService.create({
+      const hashedPassword = await hashPassword(registerDto.password);
+      const newUser = await this.usersService.create({
          ...registerDto,
-         password: passwordHash,
+         password: hashedPassword,
       });
 
-      await this.sendVerificationEmail(user);
+      await this.sendVerificationEmail(newUser);
 
-      return user;
+      return newUser;
    }
 
-   async login(loginDto: LoginDto) {
+   // Authenticate user and return user data with access token
+   async signin(loginDto: LoginDto) {
       const user = await this.validateUser(loginDto.email, loginDto.password);
 
       if (!user) {
@@ -56,7 +56,7 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync({
          userId: user.id,
          email: user.email,
-         fullname: user.fullName,
+         fullName: user.fullName,
       });
 
       return {
@@ -65,40 +65,46 @@ export class AuthService {
       };
    }
 
+   // Validate user's credentials and return user data without password
    async validateUser(email: string, password: string) {
-      const user = await this.userService.findByEmail(email);
+      const user = await this.usersService.findByEmail(email);
       if (user) {
-         const { password: passwordHash, ...result } = user;
-         const isPasswordValid = await comparePassword(password, passwordHash);
-         return isPasswordValid ? result : null;
+         const { password: hashedPassword, ...userData } = user;
+         const isPasswordValid = await comparePassword(
+            password,
+            hashedPassword,
+         );
+         return isPasswordValid ? userData : null;
       }
       return null;
    }
 
+   // Verify email using a token and update user status
    async verifyEmail(token: string) {
       const userId = this.verificationService.validateToken(token);
-      const user = userId ? await this.userService.findById(userId) : null;
+      const user = userId ? await this.usersService.findById(userId) : null;
 
       if (!user) {
          throw new InvalidVerificationTokenException();
       }
 
       if (user.verified) {
-         throw new EmailAlreadyExistsException();
+         throw new EmailAlreadyExistsException(); // TODO: Consider a more specific exception
       }
 
-      await this.userService.update(user.id, { verified: true });
+      return await this.usersService.update(user.id, { verified: true });
    }
 
-   private async sendVerificationEmail(user: any): Promise<void> {
+   // Send a verification email to the user and return the verification URL
+   private async sendVerificationEmail(user: any) {
       const token = this.verificationService.generateToken(user.id);
-      const url = this.verificationService.getVerificationUrl(token);
+      const verificationUrl =
+         this.verificationService.getVerificationUrl(token);
 
       await this.mailService.sendMail(
          user.email,
          'Verify Your Email',
-         `Hi ${user.fullName}. Please verify your email by clicking this link: 
-     ${url}`,
+         `Hi ${user.fullName}. Please verify your email by clicking this link: ${verificationUrl}`,
       );
    }
 }

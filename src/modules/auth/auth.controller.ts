@@ -2,39 +2,27 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './services/auth.service';
-import { LoggerService } from '@common/services/logger.service';
+import { ResponseMessage } from '@common/decorators/response-message.decorator';
 
 @Controller('auth')
 export class AuthController {
-   constructor(
-      private authService: AuthService,
-      private logger: LoggerService,
-   ) {}
+   constructor(private readonly authService: AuthService) {}
 
-   @Post('login')
-   async login(@Body() loginDto: LoginDto) {
-      const result = await this.authService.login(loginDto);
-      this.logger.info(result);
-      return {
-         message: 'Login successful',
-         data: result,
-      };
+   @Post('signin')
+   @ResponseMessage('Login successful.')
+   login(@Body() loginDto: LoginDto) {
+      return this.authService.signin(loginDto);
    }
 
-   @Post('register')
-   async register(@Body() registerDto: RegisterDto) {
-      await this.authService.register(registerDto);
-      return {
-         message:
-            'Registration successful. Please check your email for verification.',
-      };
+   @Post('signup')
+   @ResponseMessage('User registered successfully. Please verify your email.')
+   register(@Body() registerDto: RegisterDto) {
+      return this.authService.signup(registerDto);
    }
 
-   @Get('verify/:token')
-   async verifyEmail(@Param('token') token: string) {
-      await this.authService.verifyEmail(token);
-      return {
-         message: 'Email verified successfully.',
-      };
+   @Get('verify-email/:token')
+   @ResponseMessage('Email verified successfully.')
+   verifyEmail(@Param('token') token: string) {
+      return this.authService.verifyEmail(token);
    }
 }

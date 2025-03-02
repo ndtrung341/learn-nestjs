@@ -1,12 +1,15 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { ResponseTransformInterceptor } from '@common/interceptors/response-transform.interceptor';
 
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
 
-   // const logger = await app.resolve(LoggerService);
-   // app.useGlobalInterceptors(new LoggerInterceptor(logger));
+   app.setGlobalPrefix('api');
+
+   const reflector = app.get(Reflector);
+   app.useGlobalInterceptors(new ResponseTransformInterceptor(reflector));
 
    app.useGlobalPipes(
       new ValidationPipe({

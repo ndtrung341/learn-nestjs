@@ -1,7 +1,7 @@
-@baseUrl = http://localhost:3000/auth
+@baseUrl = http://localhost:3000/api/auth
 
 ### REGISTER
-POST {{baseUrl}}/register
+POST {{baseUrl}}/signup
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### LOGIN
-POST {{baseUrl}}/login
+POST {{baseUrl}}/signin
 Content-Type: application/json
 
 {
@@ -20,5 +20,5 @@ Content-Type: application/json
 }
 
 ### VERIFY EMAIL
-GET {{baseUrl}}/verify/EvqFRhLr
+GET {{baseUrl}}/verify/xAomGD52
 

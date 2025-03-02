@@ -14,7 +14,7 @@ export class VerificationService {
    getVerificationUrl(token: string) {
       const baseUrl = this.configService.get(
          'APP_URL',
-         'http://localhost:3000',
+         'http://localhost:3000/api',
       );
       return `${baseUrl}/auth/verify/${token}`;
    }
