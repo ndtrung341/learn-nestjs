@@ -1,8 +1,10 @@
 import { ROLES_KEY } from '@common/decorators/roles.decorator';
+import { AccessDeniedException } from '@common/exceptions/auth.exception';
 import { Role } from '@constants/roles';
-import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
+@Injectable()
 export class RolesGuard implements CanActivate {
    constructor(private reflector: Reflector) {}
 
@@ -18,8 +20,18 @@ export class RolesGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const user = request.user;
 
-      return requiredRoles.includes(user.role);
+      if (!requiredRoles.includes(user.role)) {
+         const details =
+            process.env.NODE_ENV === 'development'
+               ? {
+                    requiredRoles,
+                    role: user.role,
+                 }
+               : undefined;
 
-      return false;
+         throw new AccessDeniedException(details);
+      }
+
+      return true;
    }
 }

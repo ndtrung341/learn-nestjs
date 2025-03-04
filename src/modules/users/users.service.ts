@@ -12,7 +12,7 @@ export class UsersService {
       try {
          const user = this.usersRepository.findOne(id);
          if (!user) {
-            throw new UserNotFoundException(`User with ID ${id} not found`);
+            throw new UserNotFoundException();
          }
          return user;
       } catch (error) {

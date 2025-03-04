@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwNzA3ODE5LCJleHAiOjE3NDA3MDc4Nzl9.KixYb8Kb4uId37w1MnkSZ9nPx9HiliC4YvsPUgiRrT4
 
 ### LOCAL 
@@ -13,6 +13,3 @@ Content-Type: application/json
 ### JWT
 GET  {{baseUrl}}/test-passport-jwt
 Authorization: Bearer {{token}}
-
-### JWT
-GET  {{baseUrl}}/test-timeout

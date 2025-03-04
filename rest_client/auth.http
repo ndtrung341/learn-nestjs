@@ -14,10 +14,10 @@ Content-Type: application/json
 POST {{baseUrl}}/signin
 Content-Type: application/json
 
-# {
-#    "email": "trung@example.com",
-#    "password": "Trung@341"
-# }
+{
+   "email": "trung@example.com",
+   "password": "Trung@341"
+}
 
 ### VERIFY EMAIL
 GET {{baseUrl}}/verify/xAomGD52

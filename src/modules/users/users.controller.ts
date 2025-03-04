@@ -1,11 +1,7 @@
 import {
-   BadRequestException,
    Body,
-   ConflictException,
    Controller,
    Get,
-   HttpException,
-   HttpStatus,
    Param,
    Post,
    Put,
@@ -17,8 +13,6 @@ import { SimpleAuthGuard } from '@auth/guards/simple-auth.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@constants/roles';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { UserNotFoundException } from '@common/exceptions/user.exception';
-import { LoginDto } from '@auth/dto';
 
 @Controller('users')
 export class UsersController {

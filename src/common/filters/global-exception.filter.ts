@@ -1,44 +1,56 @@
 import {
-   ArgumentsHost,
-   ExceptionFilter,
+   type ExceptionFilter,
+   type ArgumentsHost,
    HttpException,
    HttpStatus,
+   Catch,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Response } from 'express';
 
+@Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-   catch(exception: any, host: ArgumentsHost) {
+   catch(exception: unknown, host: ArgumentsHost) {
       const ctx = host.switchToHttp();
       const response = ctx.getResponse<Response>();
-      const request = ctx.getRequest<Request>();
 
-      let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      let message: string = 'Internal server error';
-      let errors: any[] = [];
+      // Default values for unknown errors
+      let status = HttpStatus.INTERNAL_SERVER_ERROR;
+      let message = 'Internal server error';
+      let code = 'INTERNAL_SERVER_ERROR';
+      let details = undefined;
 
+      // Handle HttpExceptions
       if (exception instanceof HttpException) {
-         statusCode = exception.getStatus();
-         const response = exception.getResponse() as any;
+         status = exception.getStatus();
+         const exceptionResponse = exception.getResponse();
 
-         if (typeof response === 'string') {
-            message = response;
-         } else {
-            message = response.message || message;
-            errors = response.errors || [];
+         if (typeof exceptionResponse === 'string') {
+            message = exceptionResponse;
+         } else if (typeof exceptionResponse === 'object') {
+            const exceptionObj = exceptionResponse as Record<string, any>;
+            message = exceptionObj.message || message;
+            code = exceptionObj.code;
+            details = exceptionObj.details;
          }
       }
 
-      const errorResponse: any = {
-         status: 'error',
+      console.error('[Exception]', {
+         status,
          message,
-         path: request.url,
+         code,
+         stack: exception instanceof Error ? exception.stack : undefined,
+      });
+
+      // Send the response
+      const errorResponse = {
+         status: 'error',
+         statusCode: status,
+         message,
+         code,
+         details,
          timestamp: new Date().toISOString(),
       };
 
-      if (errors.length > 0) {
-         errorResponse.errors = errors;
-      }
-
-      response.status(statusCode).json(errorResponse);
+      response.status(status).json(errorResponse);
    }
 }
