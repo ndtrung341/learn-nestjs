@@ -9,6 +9,10 @@ import { Reflector } from '@nestjs/core';
 import { Response } from 'express';
 import { map } from 'rxjs';
 
+/**
+ * Interceptor that standardizes API response format
+ * Transforms response data into a consistent structure with status, code, message, data, and metadata
+ */
 @Injectable()
 export class ResponseTransformInterceptor implements NestInterceptor {
    constructor(private reflector: Reflector) {}
@@ -18,8 +22,8 @@ export class ResponseTransformInterceptor implements NestInterceptor {
          RESPONSE_MESSAGE_KEY,
          context.getHandler(),
       );
+
       const response = context.switchToHttp().getResponse<Response>();
-      const statusCode = response.statusCode;
 
       return next.handle().pipe(
          map((responseData) => {
@@ -37,7 +41,7 @@ export class ResponseTransformInterceptor implements NestInterceptor {
 
             return {
                status: 'success',
-               statusCode,
+               statusCode: response.statusCode,
                message: message || responseData?.message,
                data,
                meta,
