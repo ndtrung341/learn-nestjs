@@ -1,3 +1,4 @@
+import { FieldMatch } from '@common/decorators/field-match.decorator';
 import {
    IsEmail,
    IsNotEmpty,
@@ -6,14 +7,15 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
-   @IsNotEmpty()
    @IsEmail()
+   @IsNotEmpty()
    email: string;
 
-   @IsNotEmpty()
    @IsString()
+   @IsNotEmpty()
    fullName: string;
 
+   @IsString()
    @IsNotEmpty()
    @IsStrongPassword({
       minLength: 6,
@@ -23,4 +25,9 @@ export class RegisterDto {
       minSymbols: 1,
    })
    password: string;
+
+   @IsString()
+   @IsNotEmpty()
+   @FieldMatch('password')
+   confirmPassword: string;
 }

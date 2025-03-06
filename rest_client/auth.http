@@ -5,9 +5,10 @@ POST {{baseUrl}}/signup
 Content-Type: application/json
 
 {
-   "email": "mail@example.com",
+   "email": "example@mail.com",
    "fullName": "John Doe",
-   "password": "Test@123"
+   "password": "Test@123",
+   "confirm_password": "Test@123"
 }
 
 ### LOGIN

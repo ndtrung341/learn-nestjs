@@ -1,5 +1,10 @@
 import { BaseException } from '@common/exceptions/base.exception';
-import { PipeTransform, ArgumentMetadata, HttpStatus } from '@nestjs/common';
+import {
+   PipeTransform,
+   ArgumentMetadata,
+   HttpStatus,
+   Injectable,
+} from '@nestjs/common';
 import { camelToSnake } from '@utils/string';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
@@ -8,16 +13,21 @@ import { validate, ValidationError } from 'class-validator';
  * Custom validation pipe that validates incoming data against DTO classes
  * and formats validation errors with snake_case property names.
  */
+@Injectable()
 export class CustomValidationPipe implements PipeTransform {
    async transform(value: any, { metatype }: ArgumentMetadata) {
       if (!metatype || !this.shouldValidate(metatype)) {
          return value;
       }
 
-      const object = plainToInstance(metatype, value);
+      const object = plainToInstance(metatype, value, {
+         enableImplicitConversion: true,
+      });
+
       const errors = await validate(object, {
          whitelist: true,
          forbidNonWhitelisted: true,
+         // stopAtFirstError: true,
       });
 
       if (errors.length > 0) {
@@ -33,7 +43,7 @@ export class CustomValidationPipe implements PipeTransform {
    }
 
    private shouldValidate(metatype: Function) {
-      const types: Function[] = [Object, Number, String, Boolean, Array];
+      const types: Function[] = [String, Boolean, Number, Array, Object, Date];
       return !types.includes(metatype);
    }
 
@@ -50,19 +60,22 @@ export class CustomValidationPipe implements PipeTransform {
                this.formatErrors(error.children, path),
             );
          } else {
-            formattedErrors[path] = this.formatErrorMessage(error);
+            console.log(error.constraints);
+            const message = Object.values(error.constraints || {})[0];
+            formattedErrors[path] = this.formatErrorMessage(
+               error.property,
+               message,
+            );
          }
       }
 
       return formattedErrors;
    }
 
-   private formatErrorMessage(error: ValidationError): string {
-      // Get the first constraint message
-      const message = Object.values(error.constraints || {})[0];
-
-      // Replace camelCase property name with snake_case in the message
-      const propertyName = error.property;
+   /**
+    * Format error message to use snake_case property names
+    */
+   private formatErrorMessage(propertyName: string, message: string): string {
       const snakeCaseProperty = camelToSnake(propertyName);
 
       // Only replace the property name if it appears as a whole word

@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000/api/users
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxuYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQwODMwODMwLCJleHAiOjE3NDA4MzA4OTB9.BQthowclyON3mJG7bbeMrLE2oyfSQPyK8-rqD96F2As
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZW1haWwiOiJ0cnVuZ0BleGFtcGxlLmNvbSIsImZ1bGxOYW1lIjoiRHV5IFRydW5nIiwiaWF0IjoxNzQxMTczNzg1LCJleHAiOjE3NDExNzczODV9.Ps9o0LkMhSqdKX7yuyJF2xLqtlS-w0u9mk8hWJaeZCU
 
 ### GET A USER BY ID
 GET {{baseUrl}}/1
@@ -11,12 +11,12 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-   "fullName": "Duy Trung 123",
+   "full_name": "   Duy Trung   ",
    "bio": "Lorem ipsum",
    "avatar": "https://example.com/avatar.jpg",
    "personal": {
       "phone": "0930000000",
-      "dateOfBirth": "2025-01-01"
+      "date_of_birth": "2025-01-01"
    },
    "professional": {
       "company": "A1B2C3",

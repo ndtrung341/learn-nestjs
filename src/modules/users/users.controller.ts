@@ -13,6 +13,7 @@ import { SimpleAuthGuard } from '@auth/guards/simple-auth.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { Role } from '@constants/roles';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { TrimPipe } from '@common/pipes/trim.pipe';
 
 @Controller('users')
 export class UsersController {
@@ -26,7 +27,7 @@ export class UsersController {
 
    @Put(':id')
    @UseGuards(SimpleAuthGuard)
-   updateUser(@Param('id') id: string, @Body() userDto: UserDto) {
+   updateUser(@Param('id') id: string, @Body(TrimPipe) userDto: UserDto) {
       return this.usersService.update(id, userDto);
    }
 

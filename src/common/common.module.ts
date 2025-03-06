@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, ValidationPipe } from '@nestjs/common';
 import { LoggerService } from './services/logger.service';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';

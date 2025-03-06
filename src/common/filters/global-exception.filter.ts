@@ -44,7 +44,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       // Send the response
       const errorResponse = {
          status: 'error',
-         statusCode: status,
+         status_code: status,
          message,
          code,
          details,
