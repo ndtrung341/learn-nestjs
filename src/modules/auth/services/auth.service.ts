@@ -1,110 +1,75 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
-import { MailService } from '@modules/mail/mail.service';
-import { comparePassword, hashPassword } from '@utils/password';
-import {
-   EmailAlreadyExistsException,
-   EmailNotVerifiedException,
-   InvalidCredentialsException,
-   InvalidVerificationTokenException,
-} from '@common/exceptions/auth.exception';
-import { LoginDto, RegisterDto } from '../dto';
-import { VerificationService } from './verification.service';
+import { InvalidCredentialsException } from '@common/exceptions/auth.exception';
+import { ConfigService } from '@nestjs/config';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
 
 @Injectable()
 export class AuthService {
    constructor(
+      private readonly configService: ConfigService,
       private readonly usersService: UsersService,
       private readonly jwtService: JwtService,
-      private readonly mailService: MailService,
-      private readonly verificationService: VerificationService,
    ) {}
 
    // Register a new user and initiate email verification
-   async signup(registerDto: RegisterDto) {
-      const existingUser = await this.usersService.findByEmail(
-         registerDto.email,
-      );
-      if (existingUser) {
-         throw new EmailAlreadyExistsException();
-      }
-
-      const hashedPassword = await hashPassword(registerDto.password);
-      const newUser = await this.usersService.create({
-         ...registerDto,
-         password: hashedPassword,
-      });
-
-      await this.sendVerificationEmail(newUser);
-
+   async register(dto: RegisterDto) {
+      const newUser = await this.usersService.create(dto);
+      await this.sendEmailVerification(newUser);
       return newUser;
    }
 
    // Authenticate user and return user data with access token
-   async signin(loginDto: LoginDto) {
-      const user = await this.validateUser(loginDto.email, loginDto.password);
+   async login(dto: LoginDto) {
+      const user = await this.validateUser(dto.email, dto.password);
 
       if (!user) {
          throw new InvalidCredentialsException();
       }
 
-      if (!user.verified) {
-         throw new EmailNotVerifiedException();
-      }
-
-      const accessToken = await this.jwtService.signAsync({
-         userId: user.id,
+      const tokens = await this.generateJwtTokens({
+         id: user.id,
          email: user.email,
-         fullName: user.fullName,
       });
 
       return {
          user,
-         accessToken,
+         ...tokens,
       };
    }
 
-   // Validate user's credentials and return user data without password
+   // Validate user's credentials and return user;
    async validateUser(email: string, password: string) {
-      const user = await this.usersService.findByEmail(email);
-      if (user) {
-         const { password: hashedPassword, ...userData } = user;
-         const isPasswordValid = await comparePassword(
-            password,
-            hashedPassword,
-         );
-         return isPasswordValid ? userData : null;
-      }
-      return null;
+      const user = await this.usersService.findOneByEmail(email);
+      const isPasswordValid = user && (await user.checkPassword(password));
+      return isPasswordValid ? user : null;
    }
 
-   // Verify email using a token and update user status
+   // Verify email using a token and update user status accordingly
    async verifyEmail(token: string) {
-      const userId = this.verificationService.validateToken(token);
-      const user = userId ? await this.usersService.findById(userId) : null;
-
-      if (!user) {
-         throw new InvalidVerificationTokenException();
-      }
-
-      if (user.verified) {
-         throw new EmailAlreadyExistsException(); // TODO: Consider a more specific exception
-      }
-
-      return await this.usersService.update(user.id, { verified: true });
+      // TODO: Implement email verification logic (e.g., decode token, update user's verification status)
    }
 
-   // Send a verification email to the user and return the verification URL
-   private async sendVerificationEmail(user: any) {
-      const token = this.verificationService.generateToken(user.id);
-      const verificationUrl =
-         this.verificationService.getVerificationUrl(token);
+   // Generate access and refresh JWT tokens
+   private async generateJwtTokens(payload: any) {
+      const [accessToken, refreshToken] = await Promise.all([
+         this.jwtService.signAsync(payload, {
+            secret: this.configService.get('jwt.secret'),
+            expiresIn: this.configService.get('jwt.expires'),
+         }),
+         this.jwtService.signAsync(payload, {
+            secret: this.configService.get('jwt.refreshSecret'),
+            expiresIn: this.configService.get('jwt.refreshExpires'),
+         }),
+      ]);
 
-      await this.mailService.sendMail(
-         user.email,
-         'Verify Your Email',
-         `Hi ${user.fullName}. Please verify your email by clicking this link: ${verificationUrl}`,
-      );
+      return { accessToken, refreshToken };
+   }
+
+   // Send an email verification to the user
+   private async sendEmailVerification(user: any) {
+      // TODO: Implement email verification sending
    }
 }

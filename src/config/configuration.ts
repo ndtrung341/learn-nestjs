@@ -1,14 +1,18 @@
 export default () => ({
-   port: parseInt(process.env.PORT!, 10) || 3000,
+   appUrl: process.env.APP_URL,
+   port: parseInt(process.env.APP_PORT!, 10) || 3000,
    jwt: {
-      secret: process.env.JWT_SECRET,
-      expires: process.env.JWT_EXPIRES,
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      expires: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+      refreshSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
+      refreshExpires: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
    },
-   database: {
+   db: {
+      type: process.env.DB_TYPE,
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT!, 10) || 5432,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      database: process.env.DB_NAME,
    },
 });

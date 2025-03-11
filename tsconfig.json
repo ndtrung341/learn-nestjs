@@ -18,12 +18,12 @@
       "noFallthroughCasesInSwitch": false,
       "baseUrl": "./src",
       "paths": {
-         "@auth/*": ["modules/auth/*"],
          "@modules/*": ["modules/*"],
          "@common/*": ["common/*"],
          "@utils/*": ["utils/*"],
          "@config/*": ["config/*"],
-         "@constants/*": ["constants/*"]
+         "@constants/*": ["constants/*"],
+         "@shared/*": ["shared/*"]
       }
    }
 }

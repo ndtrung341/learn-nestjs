@@ -1,14 +1,14 @@
 @baseUrl = http://localhost:3000/api/auth
 
 ### REGISTER
-POST {{baseUrl}}/signup
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
    "email": "example@mail.com",
-   "fullName": "John Doe",
-   "password": "Test@123",
-   "confirm_password": "Test@123"
+   "password": "Trung@123",
+   "confirm_password": "Trung@123",
+   "fullName": "John Doe"
 }
 
 ### LOGIN
@@ -21,5 +21,5 @@ Content-Type: application/json
 }
 
 ### VERIFY EMAIL
-GET {{baseUrl}}/verify/xAomGD52
+GET {{baseUrl}}/verify-email/c4Ls6s8f
 

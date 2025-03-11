@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 
 @ValidatorConstraint({ async: false })
-class FieldMatchConstraint implements ValidatorConstraintInterface {
+class MatchFieldsConstraint implements ValidatorConstraintInterface {
    validate(
       value: any,
       args?: ValidationArguments,
@@ -27,12 +27,12 @@ export function FieldMatch(
    validationOptions?: ValidationOptions,
 ) {
    return function (object: Object, propertyName: string) {
-      return registerDecorator({
+      registerDecorator({
          target: object.constructor,
          propertyName,
          constraints: [property],
          options: validationOptions,
-         validator: FieldMatchConstraint,
+         validator: MatchFieldsConstraint,
       });
    };
 }

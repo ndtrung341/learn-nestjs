@@ -1,39 +1,34 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { UserDto } from './dto/user.dto';
-import { RegisterDto } from '@auth/dto';
-import { UserNotFoundException } from '@common/exceptions/user.exception';
-import { UsersRepository } from './repositories/user.repository';
+import { Injectable } from '@nestjs/common';
+import { UserEntity } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { EmailAlreadyExistsException } from '@common/exceptions/auth.exception';
 
 @Injectable()
 export class UsersService {
-   constructor(private readonly usersRepository: UsersRepository) {}
+   constructor(
+      @InjectRepository(UserEntity)
+      private userRepository: Repository<UserEntity>,
+   ) {}
 
-   findById(id: string) {
-      try {
-         const user = this.usersRepository.findOne(id);
-         if (!user) {
-            throw new UserNotFoundException();
-         }
-         return user;
-      } catch (error) {
-         throw new InternalServerErrorException(error.message);
+   async create(dto: CreateUserDto) {
+      const existingUser = await this.findOneByEmail(dto.email);
+
+      if (existingUser) {
+         throw new EmailAlreadyExistsException();
       }
+
+      const newUser = this.userRepository.create(dto);
+
+      return this.userRepository.save(newUser);
    }
 
-   findByEmail(email: string) {
-      return this.usersRepository.findByEmail(email);
+   async findOneByEmail(email: string) {
+      return this.userRepository.findOneBy({ email });
    }
 
-   async create(data: RegisterDto) {
-      const user = await this.usersRepository.create({
-         ...data,
-         verified: false,
-      });
-      return user;
-   }
-
-   async update(id: string, data: Partial<UserDto>) {
-      const user = await this.usersRepository.update(id, data);
-      return user;
+   async findOneById(id: string) {
+      return this.userRepository.findOneBy({ id });
    }
 }

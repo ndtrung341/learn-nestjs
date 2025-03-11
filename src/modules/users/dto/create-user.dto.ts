@@ -1,13 +1,14 @@
-import { FieldMatch } from '@common/decorators/validators/field-match.decorator';
 import {
    IsEmail,
    IsNotEmpty,
+   IsOptional,
    IsString,
    IsStrongPassword,
+   IsUrl,
    MaxLength,
 } from 'class-validator';
 
-export class RegisterDto {
+export class CreateUserDto {
    @IsEmail()
    @IsNotEmpty()
    email: string;
@@ -34,7 +35,11 @@ export class RegisterDto {
    password: string;
 
    @IsString()
-   @FieldMatch('password')
-   @IsNotEmpty()
-   confirmPassword: string;
+   @IsOptional()
+   bio?: string;
+
+   @IsString()
+   @MaxLength(255)
+   @IsOptional()
+   image?: string;
 }

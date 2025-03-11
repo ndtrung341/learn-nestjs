@@ -13,7 +13,7 @@ import { map } from 'rxjs';
  * - Transforms response data from camelCase to snake_case
  */
 @Injectable()
-export class CaseFormatInterceptor implements NestInterceptor {
+export class CamelSnakeInterceptor implements NestInterceptor {
    intercept(context: ExecutionContext, next: CallHandler<any>) {
       const request = context.switchToHttp().getRequest();
 
@@ -29,12 +29,12 @@ export class CaseFormatInterceptor implements NestInterceptor {
    }
 
    private transformKeys(data: any, transformer: (str: string) => string) {
-      if (!data || typeof data !== 'object') {
+      if (!data || typeof data !== 'object' || data instanceof Date) {
          return data;
       }
 
       if (Array.isArray(data)) {
-         data.map((item) => this.transformKeys(item, transformer));
+         return data.map((item) => this.transformKeys(item, transformer));
       }
 
       return Object.entries(data).reduce((acc, [key, val]) => {

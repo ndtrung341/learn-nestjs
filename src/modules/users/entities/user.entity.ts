@@ -1,34 +1,41 @@
-import { BaseEntity } from '@common/entities/base.entity';
-import { Exclude, Expose } from 'class-transformer';
+import { BaseEntity } from 'database/entities/base.entity';
+import { Exclude } from 'class-transformer';
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import * as passwordUtils from '@utils/password';
 
-export class User extends BaseEntity {
-   @Expose()
+@Entity('user')
+export class UserEntity extends BaseEntity {
+   @Column({ unique: true })
    email: string;
 
-   @Expose()
-   fullName: string;
-
-   @Expose()
-   bio?: string;
-
-   @Expose()
-   avatar?: string;
-
-   @Expose()
-   personal?: {
-      phone?: string;
-      dateOfBirth?: string;
-   };
-
-   @Expose()
-   professional?: {
-      position?: string;
-      company?: string;
-   };
-
+   @Column()
    @Exclude()
    password: string;
 
-   @Exclude()
-   verified: boolean;
+   @Column({ name: 'first_name' })
+   firstName: string;
+
+   @Column({ name: 'last_name' })
+   lastName: string;
+
+   @Column({ default: '' })
+   bio?: string;
+
+   @Column({ default: '' })
+   image?: string;
+
+   @Column({ name: 'is_verified', default: false })
+   isVerified: boolean;
+
+   @BeforeInsert()
+   @BeforeUpdate()
+   async hashPass() {
+      if (this.password) {
+         this.password = await passwordUtils.hashPassword(this.password);
+      }
+   }
+
+   async checkPassword(password: string): Promise<boolean> {
+      return await passwordUtils.comparePassword(password, this.password);
+   }
 }

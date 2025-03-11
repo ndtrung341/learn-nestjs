@@ -14,16 +14,16 @@ import { map } from 'rxjs';
  * Transforms response data into a consistent structure with status, code, message, data, and metadata
  */
 @Injectable()
-export class ResponseTransformInterceptor implements NestInterceptor {
+export class StandardizeTrInterceptor implements NestInterceptor {
    constructor(private reflector: Reflector) {}
 
    intercept(context: ExecutionContext, next: CallHandler<any>) {
+      const response = context.switchToHttp().getResponse<Response>();
+
       const message = this.reflector.get(
          RESPONSE_MESSAGE_KEY,
          context.getHandler(),
       );
-
-      const response = context.switchToHttp().getResponse<Response>();
 
       return next.handle().pipe(
          map((responseData) => {
@@ -41,7 +41,7 @@ export class ResponseTransformInterceptor implements NestInterceptor {
 
             return {
                status: 'success',
-               statusCode: response.statusCode,
+               status_code: response.statusCode,
                message: message || responseData?.message,
                data,
                meta,

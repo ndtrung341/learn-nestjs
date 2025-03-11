@@ -14,7 +14,7 @@ import { validate, ValidationError } from 'class-validator';
  * and formats validation errors with snake_case property names.
  */
 @Injectable()
-export class CustomValidationPipe implements PipeTransform {
+export class CustomValidationPipe implements PipeTransform<any> {
    async transform(value: any, { metatype }: ArgumentMetadata) {
       if (!metatype || !this.shouldValidate(metatype)) {
          return value;
@@ -33,7 +33,7 @@ export class CustomValidationPipe implements PipeTransform {
       if (errors.length > 0) {
          throw new BaseException(
             'Validation failed',
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNPROCESSABLE_ENTITY,
             'VALIDATION_ERROR',
             this.formatErrors(errors),
          );
@@ -43,7 +43,7 @@ export class CustomValidationPipe implements PipeTransform {
    }
 
    private shouldValidate(metatype: Function) {
-      const types: Function[] = [String, Boolean, Number, Array, Object, Date];
+      const types: Function[] = [String, Boolean, Number, Array, Object];
       return !types.includes(metatype);
    }
 
@@ -60,7 +60,6 @@ export class CustomValidationPipe implements PipeTransform {
                this.formatErrors(error.children, path),
             );
          } else {
-            console.log(error.constraints);
             const message = Object.values(error.constraints || {})[0];
             formattedErrors[path] = this.formatErrorMessage(
                error.property,

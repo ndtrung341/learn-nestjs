@@ -1,40 +1,25 @@
-import {
-   Body,
-   Controller,
-   Get,
-   Param,
-   Post,
-   Put,
-   UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
-import { SimpleAuthGuard } from '@auth/guards/simple-auth.guard';
-import { Roles } from '@common/decorators/roles.decorator';
-import { Role } from '@constants/roles';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { TrimPipe } from '@common/pipes/trim.pipe';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { ApiPrivate } from '@common/decorators/http.decorators';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('users')
 export class UsersController {
    constructor(private readonly usersService: UsersService) {}
 
-   @Get(':id')
-   @UseGuards(SimpleAuthGuard)
-   getUser(@Param('id') id: string) {
-      return this.usersService.findById(id);
+   @ApiPrivate()
+   @Get('me')
+   getCurrentUser(@CurrentUser('id') id: string) {
+      return this.usersService.findOneById(id);
    }
 
-   @Put(':id')
-   @UseGuards(SimpleAuthGuard)
-   updateUser(@Param('id') id: string, @Body(TrimPipe) userDto: UserDto) {
-      return this.usersService.update(id, userDto);
-   }
-
-   @Post('block')
-   @UseGuards(JwtAuthGuard)
-   @Roles([Role.ADMIN])
-   blockUser() {
-      return 'Block successfully';
+   @ApiPrivate({
+      statusCode: HttpStatus.CREATED,
+      message: 'User successfully created',
+   })
+   @Post()
+   createUser(@Body() createUserDto: CreateUserDto) {
+      return this.usersService.create(createUserDto);
    }
 }

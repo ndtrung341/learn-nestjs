@@ -1,17 +1,31 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
+import { CustomValidationPipe } from '@common/pipes/custom-validation.pipe';
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
+import { CamelSnakeInterceptor } from '@common/interceptors/camel-snake.interceptor';
+import { StandardizeTrInterceptor } from '@common/interceptors/standardize.interceptor';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
 
-   // const reflector = app.get(Reflector);
+   const config = app.get(ConfigService);
+   const reflector = app.get(Reflector);
 
    app.setGlobalPrefix('api');
+   app.useGlobalGuards(new AuthGuard(reflector));
+   app.useGlobalInterceptors(
+      new CamelSnakeInterceptor(),
+      new StandardizeTrInterceptor(reflector),
+      new ClassSerializerInterceptor(reflector),
+   );
+   app.useGlobalPipes(new CustomValidationPipe());
+   app.useGlobalFilters(new GlobalExceptionFilter());
 
-   // app.useGlobalInterceptors(new ResponseTransformInterceptor(reflector));
-   // app.useGlobalPipes(new CustomValidationPipe());
-   // app.useGlobalFilters(new GlobalExceptionFilter())
+   await app.listen(config.get('port') ?? 3000);
 
-   await app.listen(process.env.PORT ?? 3000);
+   console.info(`Server running on ${await app.getUrl()}`);
 }
 bootstrap();

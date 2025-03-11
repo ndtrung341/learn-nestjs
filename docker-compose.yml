@@ -1,0 +1,9 @@
+services:
+   postgres:
+      image: postgres:17
+      environment:
+         POSTGRES_USER: trung341
+         POSTGRES_PASSWORD: Trung@341
+         POSTGRES_DB: learn_nestjs
+      ports:
+         - '5433:5432'

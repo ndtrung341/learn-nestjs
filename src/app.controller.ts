@@ -1,18 +1,8 @@
-import {
-   Controller,
-   Get,
-   Req,
-   UseGuards,
-   UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { AppService } from './app.service';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { LoggerInterceptor } from '@common/interceptors/logger.interceptor';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 
 @Controller()
-@UseInterceptors(LoggerInterceptor)
 export class AppController {
    constructor(private readonly appService: AppService) {}
 
@@ -22,14 +12,13 @@ export class AppController {
    }
 
    @Get('test-passport-local')
-   @UseGuards(LocalAuthGuard)
    testLocal(@CurrentUser() user) {
       return user;
    }
 
    @Get('test-passport-jwt')
-   @UseGuards(JwtAuthGuard)
    testJwt(@Req() request) {
+      12;
       return request.user;
    }
 }
