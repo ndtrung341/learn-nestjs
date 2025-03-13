@@ -1,23 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
-import { InvalidCredentialsException } from '@common/exceptions/auth.exception';
+import {
+   EmailNotVerifiedException,
+   InvalidCredentialsException,
+} from '@common/exceptions/auth.exception';
 import { ConfigService } from '@nestjs/config';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { MailService } from '@modules/mail/mail.service';
 
 @Injectable()
 export class AuthService {
    constructor(
       private readonly configService: ConfigService,
       private readonly usersService: UsersService,
+      private readonly mailService: MailService,
       private readonly jwtService: JwtService,
    ) {}
 
    // Register a new user and initiate email verification
    async register(dto: RegisterDto) {
       const newUser = await this.usersService.create(dto);
-      await this.sendEmailVerification(newUser);
+      await this.mailService.sendEmailVerification(
+         newUser.email,
+         newUser.verifyToken!,
+      );
       return newUser;
    }
 
@@ -27,6 +35,10 @@ export class AuthService {
 
       if (!user) {
          throw new InvalidCredentialsException();
+      }
+
+      if (!user.isVerified) {
+         throw new EmailNotVerifiedException();
       }
 
       const tokens = await this.generateJwtTokens({
@@ -49,7 +61,7 @@ export class AuthService {
 
    // Verify email using a token and update user status accordingly
    async verifyEmail(token: string) {
-      // TODO: Implement email verification logic (e.g., decode token, update user's verification status)
+      await this.usersService.verify(token);
    }
 
    // Generate access and refresh JWT tokens
@@ -66,10 +78,5 @@ export class AuthService {
       ]);
 
       return { accessToken, refreshToken };
-   }
-
-   // Send an email verification to the user
-   private async sendEmailVerification(user: any) {
-      // TODO: Implement email verification sending
    }
 }

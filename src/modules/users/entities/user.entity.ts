@@ -27,6 +27,14 @@ export class UserEntity extends BaseEntity {
    @Column({ name: 'is_verified', default: false })
    isVerified: boolean;
 
+   @Exclude()
+   @Column({ name: 'verify_token', nullable: true })
+   verifyToken?: string;
+
+   @Exclude()
+   @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })
+   verifyExpires?: Date;
+
    @BeforeInsert()
    @BeforeUpdate()
    async hashPass() {

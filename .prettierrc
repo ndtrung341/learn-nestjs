@@ -7,5 +7,13 @@
    "bracketSpacing": true,
    "arrowParens": "always",
    "endOfLine": "lf",
-   "printWidth": 80
+   "printWidth": 80,
+   "overrides": [
+      {
+         "files": "*.hbs",
+         "options": {
+            "parser": "html"
+         }
+      }
+   ]
 }
