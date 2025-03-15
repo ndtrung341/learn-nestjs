@@ -5,6 +5,7 @@ import {
    IsNumber,
    IsString,
    IsUrl,
+   Matches,
    Max,
    Min,
    validateSync,
@@ -55,13 +56,15 @@ class EnvironmentVariables {
    JWT_ACCESS_TOKEN_SECRET: string;
 
    @IsString()
-   JWT_ACCESS_TOKEN_EXPIRES_IN: string;
+   @Matches(/^\d+(s|m|h|d|w)$/)
+   JWT_ACCESS_TOKEN_EXPIRES: string;
 
    @IsString()
    JWT_REFRESH_TOKEN_SECRET: string;
 
    @IsString()
-   JWT_REFRESH_TOKEN_EXPIRES_IN: string;
+   @Matches(/^\d+(s|m|h|d|w)$/)
+   JWT_REFRESH_TOKEN_EXPIRES: string;
 
    // Mail
    @IsString()

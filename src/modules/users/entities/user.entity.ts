@@ -1,4 +1,4 @@
-import { BaseEntity } from 'database/entities/base.entity';
+import { BaseEntity } from '@db/entities/base.entity';
 import { Exclude } from 'class-transformer';
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import * as passwordUtils from '@utils/password';

@@ -17,13 +17,15 @@
       "strictBindCallApply": false,
       "noFallthroughCasesInSwitch": false,
       "baseUrl": "./src",
+      "esModuleInterop": true,
       "paths": {
          "@modules/*": ["modules/*"],
          "@common/*": ["common/*"],
          "@utils/*": ["utils/*"],
          "@config/*": ["config/*"],
          "@constants/*": ["constants/*"],
-         "@shared/*": ["shared/*"]
+         "@shared/*": ["shared/*"],
+         "@db/*": ["database/*"]
       }
    }
 }

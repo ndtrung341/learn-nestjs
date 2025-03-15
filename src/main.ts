@@ -7,12 +7,15 @@ import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { CamelSnakeInterceptor } from '@common/interceptors/camel-snake.interceptor';
 import { StandardizeTrInterceptor } from '@common/interceptors/standardize.interceptor';
 import { ClassSerializerInterceptor } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
 
    const config = app.get(ConfigService);
    const reflector = app.get(Reflector);
+
+   app.use(cookieParser());
 
    app.setGlobalPrefix('api');
    app.useGlobalGuards(new AuthGuard(reflector));

@@ -9,7 +9,7 @@ import { UsersModule } from '@modules/users/users.module';
 import configuration from '@config/configuration';
 import { validateEnv } from '@utils/validate-env';
 import { SharedModule } from '@shared/shared.module';
-import { DatabaseModule } from 'database/database.module';
+import { DatabaseModule } from '@db/database.module';
 
 @Module({
    imports: [

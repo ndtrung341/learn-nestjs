@@ -3,9 +3,9 @@ export default () => ({
    port: parseInt(process.env.APP_PORT!, 10) || 3000,
    jwt: {
       secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-      expires: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+      expires: process.env.JWT_ACCESS_TOKEN_EXPIRES,
       refreshSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
-      refreshExpires: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+      refreshExpires: process.env.JWT_REFRESH_TOKEN_EXPIRES,
    },
    db: {
       type: process.env.DB_TYPE,

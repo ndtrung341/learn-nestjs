@@ -10,7 +10,7 @@ export class UsersController {
 
    @ApiPrivate()
    @Get('me')
-   getCurrentUser(@CurrentUser('id') id: string) {
+   getCurrentUser(@CurrentUser('sub') id: string) {
       return this.usersService.findOneById(id);
    }
 

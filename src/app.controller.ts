@@ -10,15 +10,4 @@ export class AppController {
    getHello(): string {
       return this.appService.getHello();
    }
-
-   @Get('test-passport-local')
-   testLocal(@CurrentUser() user) {
-      return user;
-   }
-
-   @Get('test-passport-jwt')
-   testJwt(@Req() request) {
-      12;
-      return request.user;
-   }
 }

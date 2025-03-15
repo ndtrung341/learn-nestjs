@@ -9,6 +9,9 @@ import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '@modules/mail/mail.service';
+import { Response } from 'express';
+import ms from 'ms';
+import { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +33,7 @@ export class AuthService {
    }
 
    // Authenticate user and return user data with access token
-   async login(dto: LoginDto) {
+   async login(dto: LoginDto, res: Response) {
       const user = await this.validateUser(dto.email, dto.password);
 
       if (!user) {
@@ -42,13 +45,21 @@ export class AuthService {
       }
 
       const tokens = await this.generateJwtTokens({
-         id: user.id,
+         sub: user.id,
          email: user.email,
+      });
+
+      res.cookie('refresh_token', tokens.refreshToken, {
+         httpOnly: true,
+         sameSite: 'strict',
+         path: '/api/auth/refresh',
+         maxAge: +ms(this.configService.getOrThrow('jwt.refreshExpires')),
       });
 
       return {
          user,
-         ...tokens,
+         accessToken: tokens.accessToken,
+         expiresIn: ms(this.configService.getOrThrow('jwt.expires')),
       };
    }
 
@@ -64,19 +75,31 @@ export class AuthService {
       await this.usersService.verify(token);
    }
 
+   async refreshToken(payload: JwtPayload) {
+      const accessToken = await this.jwtService.signAsync(payload, {
+         secret: this.configService.getOrThrow('jwt.secret'),
+         expiresIn: this.configService.getOrThrow('jwt.expires'),
+      });
+
+      return { accessToken };
+   }
+
    // Generate access and refresh JWT tokens
-   private async generateJwtTokens(payload: any) {
+   private async generateJwtTokens(payload: JwtPayload) {
       const [accessToken, refreshToken] = await Promise.all([
          this.jwtService.signAsync(payload, {
-            secret: this.configService.get('jwt.secret'),
-            expiresIn: this.configService.get('jwt.expires'),
+            secret: this.configService.getOrThrow('jwt.secret'),
+            expiresIn: this.configService.getOrThrow('jwt.expires'),
          }),
          this.jwtService.signAsync(payload, {
-            secret: this.configService.get('jwt.refreshSecret'),
-            expiresIn: this.configService.get('jwt.refreshExpires'),
+            secret: this.configService.getOrThrow('jwt.refreshSecret'),
+            expiresIn: this.configService.getOrThrow('jwt.refreshExpires'),
          }),
       ]);
 
-      return { accessToken, refreshToken };
+      return {
+         accessToken,
+         refreshToken,
+      };
    }
 }
