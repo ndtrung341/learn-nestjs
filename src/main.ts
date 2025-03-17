@@ -27,7 +27,7 @@ async function bootstrap() {
    app.useGlobalPipes(new CustomValidationPipe());
    app.useGlobalFilters(new GlobalExceptionFilter());
 
-   await app.listen(config.get('port') ?? 3000);
+   await app.listen(config.get('app.port') ?? 3000);
 
    console.info(`Server running on ${await app.getUrl()}`);
 }

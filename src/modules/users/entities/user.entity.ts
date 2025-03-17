@@ -29,7 +29,7 @@ export class UserEntity extends BaseEntity {
 
    @Exclude()
    @Column({ name: 'verify_token', nullable: true })
-   verifyToken?: string;
+   verifyToken: string;
 
    @Exclude()
    @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })

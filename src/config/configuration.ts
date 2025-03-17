@@ -1,6 +1,9 @@
 export default () => ({
-   appUrl: process.env.APP_URL,
-   port: parseInt(process.env.APP_PORT!, 10) || 3000,
+   app: {
+      baseUrl: process.env.APP_URL,
+      prefix: process.env.APP_PREFIX,
+      port: parseInt(process.env.APP_PORT!, 10) || 3000,
+   },
    jwt: {
       secret: process.env.JWT_ACCESS_TOKEN_SECRET,
       expires: process.env.JWT_ACCESS_TOKEN_EXPIRES,

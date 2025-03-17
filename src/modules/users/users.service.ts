@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,12 +10,19 @@ import {
 } from '@common/exceptions/auth.exception';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { SessionEntity } from './entities/session.entity';
+import ms from 'ms';
+import dayjs from 'dayjs';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
    constructor(
+      private configService: ConfigService,
       @InjectRepository(UserEntity)
       private userRepository: Repository<UserEntity>,
+      @InjectRepository(SessionEntity)
+      private sessionRepository: Repository<SessionEntity>,
    ) {}
 
    async create(dto: CreateUserDto) {
@@ -40,7 +47,7 @@ export class UsersService {
 
    async update(id: string, dto: UpdateUserDto) {
       const user = await this.userRepository.findOneBy({ id });
-      await this.userRepository.save({ ...user, ...dto });
+      return await this.userRepository.save({ ...user, ...dto });
    }
 
    async findOneByEmail(email: string) {
@@ -70,5 +77,30 @@ export class UsersService {
          verifyExpires: undefined,
          isVerified: true,
       });
+   }
+
+   async createSession(userId: string) {
+      const expiresIn = +ms(this.configService.get('jwt.refreshExpires')!);
+
+      const session = this.sessionRepository.create({
+         userId,
+         jti: uuidv4(),
+         expiresIn,
+      });
+      return this.sessionRepository.save(session);
+   }
+
+   async updateSession(sessionId: string, jti: string) {
+      const session = await this.sessionRepository.findOneBy({ id: sessionId });
+
+      if (!session || session.invalid || session.jti !== jti) {
+         if (session) {
+            await this.sessionRepository.update(session.id, { invalid: true });
+         }
+         throw new UnauthorizedException();
+      }
+
+      session.jti = uuidv4();
+      return this.sessionRepository.save(session);
    }
 }
