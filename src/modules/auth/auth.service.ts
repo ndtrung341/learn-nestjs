@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
 import {
@@ -50,6 +50,14 @@ export class AuthService {
          user,
          ...token,
       };
+   }
+
+   async logout(sessionId: string, res: Response) {
+      const result = await this.usersService.removeSession(sessionId);
+      if (result.affected === 0) {
+         throw new UnauthorizedException('Session not found');
+      }
+      res.clearCookie('refresh_token');
    }
 
    // Validates user credentials.

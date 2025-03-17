@@ -60,6 +60,7 @@ export class UsersService {
 
    async verify(token: string) {
       const user = await this.userRepository.findOneBy({ verifyToken: token });
+
       if (!user) {
          throw new InvalidVerificationTokenException();
       }
@@ -102,5 +103,9 @@ export class UsersService {
 
       session.jti = uuidv4();
       return this.sessionRepository.save(session);
+   }
+
+   async removeSession(sessionId: string) {
+      return this.sessionRepository.delete({ id: sessionId });
    }
 }

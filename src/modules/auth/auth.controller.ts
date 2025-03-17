@@ -11,7 +11,7 @@ import {
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
-import { ApiPublic } from '@common/decorators/http.decorators';
+import { ApiPrivate, ApiPublic } from '@common/decorators/http.decorators';
 import { Response } from 'express';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
@@ -34,8 +34,8 @@ export class AuthController {
 
    @Post('register')
    @ApiPublic({
-      message: 'User registered successfully. Please verify your email',
       statusCode: HttpStatus.CREATED,
+      message: 'User registered successfully. Please verify your email',
    })
    register(@Body() registerDto: RegisterDto) {
       return this.authService.register(registerDto);
@@ -58,5 +58,14 @@ export class AuthController {
    ) {
       const { sub: userId, session: sessionId, jti } = payload;
       return this.authService.reissueTokens(userId, sessionId, jti, res);
+   }
+
+   @Get('logout')
+   @ApiPrivate({ message: 'User logged out successfully' })
+   logout(
+      @CurrentUser('session') sessionId: string,
+      @Res({ passthrough: true }) res,
+   ) {
+      return this.authService.logout(sessionId, res);
    }
 }
