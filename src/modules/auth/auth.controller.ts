@@ -8,11 +8,11 @@ import {
    Res,
    UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { ApiPrivate, ApiPublic } from '@common/decorators/http.decorators';
-import { Response } from 'express';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { JwtRefreshPayload } from './types/jwt-payload.type';
@@ -25,7 +25,7 @@ export class AuthController {
    @ApiPublic({
       message: 'Login successful',
    })
-   login(
+   async login(
       @Body() loginDto: LoginDto,
       @Res({ passthrough: true }) res: Response,
    ) {
@@ -37,7 +37,7 @@ export class AuthController {
       statusCode: HttpStatus.CREATED,
       message: 'User registered successfully. Please verify your email',
    })
-   register(@Body() registerDto: RegisterDto) {
+   async register(@Body() registerDto: RegisterDto) {
       return this.authService.register(registerDto);
    }
 
@@ -45,14 +45,14 @@ export class AuthController {
    @ApiPublic({
       message: 'Email verified successfully',
    })
-   verifyEmail(@Query('token') token: string) {
+   async verifyEmail(@Query('token') token: string) {
       return this.authService.verifyEmail(token);
    }
 
    @Post('refresh')
    @UseGuards(JwtRefreshGuard)
    @ApiPublic()
-   refresh(
+   async refresh(
       @CurrentUser() payload: JwtRefreshPayload,
       @Res({ passthrough: true }) res: Response,
    ) {
@@ -62,9 +62,9 @@ export class AuthController {
 
    @Get('logout')
    @ApiPrivate({ message: 'User logged out successfully' })
-   logout(
+   async logout(
       @CurrentUser('session') sessionId: string,
-      @Res({ passthrough: true }) res,
+      @Res({ passthrough: true }) res: Response,
    ) {
       return this.authService.logout(sessionId, res);
    }

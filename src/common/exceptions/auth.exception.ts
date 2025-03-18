@@ -85,3 +85,25 @@ export class AccessDeniedException extends BaseException {
       );
    }
 }
+
+export class SessionNotFoundException extends BaseException {
+   constructor() {
+      super('Session not found', HttpStatus.NOT_FOUND, 'SESSION_NOT_FOUND');
+   }
+}
+
+export class SessionBlacklistedException extends BaseException {
+   constructor() {
+      super(
+         'Session is blacklisted',
+         HttpStatus.UNAUTHORIZED,
+         'SESSION_BLACKLISTED',
+      );
+   }
+}
+
+export class SessionInvalidException extends BaseException {
+   constructor() {
+      super('Session is invalid', HttpStatus.UNAUTHORIZED, 'SESSION_INVALID');
+   }
+}

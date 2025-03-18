@@ -1,19 +1,29 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserEntity } from './entities/user.entity';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+
+import { UserEntity } from './entities/user.entity';
+import { SessionEntity } from './entities/session.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
 import {
    EmailAlreadyExistsException,
    EmailAlreadyVerifiedException,
    InvalidVerificationTokenException,
+   SessionBlacklistedException,
+   SessionInvalidException,
+   SessionNotFoundException,
 } from '@common/exceptions/auth.exception';
+
 import { v4 as uuidv4 } from 'uuid';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { SessionEntity } from './entities/session.entity';
-import ms from 'ms';
 import dayjs from 'dayjs';
-import { ConfigService } from '@nestjs/config';
+import ms from 'ms';
+
+import { createCacheKey } from '@utils/cache';
+import { CACHE_KEY } from '@constants/app.constants';
 
 @Injectable()
 export class UsersService {
@@ -23,56 +33,66 @@ export class UsersService {
       private userRepository: Repository<UserEntity>,
       @InjectRepository(SessionEntity)
       private sessionRepository: Repository<SessionEntity>,
+      @Inject(CACHE_MANAGER) private cacheManager: Cache,
    ) {}
 
+   /**
+    * Creates a new user with a verification token.
+    */
    async create(dto: CreateUserDto) {
       const existingUser = await this.findOneByEmail(dto.email);
-
       if (existingUser) {
          throw new EmailAlreadyExistsException();
       }
-
       const verifyToken = uuidv4();
       const verifyExpires = new Date();
       verifyExpires.setMinutes(verifyExpires.getMinutes() + 2);
-
       const newUser = this.userRepository.create({
          ...dto,
          verifyToken,
          verifyExpires,
       });
-
       return this.userRepository.save(newUser);
    }
 
+   /**
+    * Updates user details.
+    */
    async update(id: string, dto: UpdateUserDto) {
       const user = await this.userRepository.findOneBy({ id });
       return await this.userRepository.save({ ...user, ...dto });
    }
 
+   /**
+    * Finds a user by email.
+    */
    async findOneByEmail(email: string) {
-      return this.userRepository.findOneBy({ email });
+      return this.userRepository.findOne({
+         where: { email },
+      });
    }
 
+   /**
+    * Finds a user by ID.
+    */
    async findOneById(id: string) {
       return this.userRepository.findOneBy({ id });
    }
 
+   /**
+    * Verifies a user's email using a token.
+    */
    async verify(token: string) {
       const user = await this.userRepository.findOneBy({ verifyToken: token });
-
       if (!user) {
          throw new InvalidVerificationTokenException();
       }
-
       if (user.isVerified) {
          throw new EmailAlreadyVerifiedException();
       }
-
-      if (new Date() > user.verifyExpires!) {
+      if (dayjs().isAfter(user.verifyExpires)) {
          throw new InvalidVerificationTokenException();
       }
-
       return this.userRepository.update(user.id, {
          verifyToken: undefined,
          verifyExpires: undefined,
@@ -80,8 +100,13 @@ export class UsersService {
       });
    }
 
+   /**
+    * Creates a new user session.
+    */
    async createSession(userId: string) {
-      const expiresIn = +ms(this.configService.get('jwt.refreshExpires')!);
+      const expiresIn = +ms(
+         this.configService.getOrThrow('jwt.refreshExpires'),
+      );
 
       const session = this.sessionRepository.create({
          userId,
@@ -91,21 +116,63 @@ export class UsersService {
       return this.sessionRepository.save(session);
    }
 
-   async updateSession(sessionId: string, jti: string) {
-      const session = await this.sessionRepository.findOneBy({ id: sessionId });
-
-      if (!session || session.invalid || session.jti !== jti) {
-         if (session) {
-            await this.sessionRepository.update(session.id, { invalid: true });
-         }
-         throw new UnauthorizedException();
-      }
-
+   /*
+    * Rotates a session every refresh token
+    */
+   async rotateSession(session: SessionEntity) {
       session.jti = uuidv4();
       return this.sessionRepository.save(session);
    }
 
+   /**
+    * Removes a session by ID.
+    */
    async removeSession(sessionId: string) {
       return this.sessionRepository.delete({ id: sessionId });
+   }
+
+   /**
+    * Checks if a session is blacklisted.
+    */
+   async isSessionBlacklisted(sessionId: string) {
+      const result = await this.cacheManager.get<boolean>(
+         createCacheKey(CACHE_KEY.SESSION_BLACKLIST, sessionId),
+      );
+
+      return Boolean(result);
+   }
+
+   /**
+    * Invalidates a session and adds it to the blacklist
+    */
+   async blacklistSession(session: SessionEntity) {
+      const ttl = session.expiresIn - dayjs().diff(session.updatedAt, 'ms');
+      await this.sessionRepository.update(session.id, { invalid: true });
+      await this.cacheManager.set<boolean>(
+         createCacheKey(CACHE_KEY.SESSION_BLACKLIST, session.id),
+         true,
+         ttl,
+      );
+   }
+
+   /**
+    * Checks if a session is valid and active.
+    */
+   async checkSessionValidity(sessionId: string, jti: string) {
+      if (await this.isSessionBlacklisted(sessionId)) {
+         throw new SessionBlacklistedException();
+      }
+
+      const session = await this.sessionRepository.findOneBy({ id: sessionId });
+      if (!session) {
+         throw new SessionNotFoundException();
+      }
+
+      if (session.invalid || session.jti !== jti) {
+         await this.blacklistSession(session);
+         throw new SessionInvalidException();
+      }
+
+      return session;
    }
 }

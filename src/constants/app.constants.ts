@@ -9,3 +9,7 @@ export enum Role {
    MEMBER = 'MEMBER', // Member who can edit cards
    OBSERVER = 'OBSERVER', // Observer with view-only access
 }
+
+export enum CACHE_KEY {
+   SESSION_BLACKLIST = 'session-blacklist:$sid',
+}

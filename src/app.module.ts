@@ -10,6 +10,7 @@ import configuration from '@config/configuration';
 import { validateEnv } from '@utils/validate-env';
 import { SharedModule } from '@shared/shared.module';
 import { DatabaseModule } from '@db/database.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
    imports: [
@@ -20,6 +21,7 @@ import { DatabaseModule } from '@db/database.module';
          load: [configuration],
          validate: validateEnv,
       }),
+      CacheModule.register({ isGlobal: true }),
       DatabaseModule,
       SharedModule,
       UsersModule,
