@@ -13,7 +13,7 @@ import crypto from 'crypto';
 @Entity({ name: 'session' })
 export class SessionEntity extends BaseEntity {
    @Column({ type: 'varchar', length: 255 })
-   jti: string;
+   token: string;
 
    @Column({ default: false })
    invalid: boolean;
@@ -30,9 +30,12 @@ export class SessionEntity extends BaseEntity {
 
    @BeforeInsert()
    @BeforeUpdate()
-   hashJti() {
-      if (this.jti) {
-         this.jti = crypto.createHash('sha256').update(this.jti).digest('hex');
+   hashToken() {
+      if (this.token) {
+         this.token = crypto
+            .createHash('sha256')
+            .update(this.token)
+            .digest('hex');
       }
    }
 }

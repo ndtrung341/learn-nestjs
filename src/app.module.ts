@@ -11,6 +11,7 @@ import { validateEnv } from '@utils/validate-env';
 import { SharedModule } from '@shared/shared.module';
 import { DatabaseModule } from '@db/database.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
    imports: [
@@ -22,6 +23,7 @@ import { CacheModule } from '@nestjs/cache-manager';
          validate: validateEnv,
       }),
       CacheModule.register({ isGlobal: true }),
+      ScheduleModule.forRoot(),
       DatabaseModule,
       SharedModule,
       UsersModule,

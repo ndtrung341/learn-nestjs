@@ -19,6 +19,7 @@ import {
    InvalidCredentialsException,
    SessionNotFoundException,
 } from '@common/exceptions/auth.exception';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,6 @@ export class AuthService {
       private mailService: MailService,
       private jwtService: JwtService,
    ) {}
-
    /**
     * Registers a new user and sends a verification email.
     */
@@ -44,7 +44,7 @@ export class AuthService {
    /**
     * Authenticates a user and issues tokens.
     */
-   async login(dto: LoginDto, res: Response) {
+   async login(dto: LoginDto, res?: Response) {
       const user = await this.validateUser(dto.email, dto.password);
 
       if (!user) throw new InvalidCredentialsException();
@@ -54,9 +54,9 @@ export class AuthService {
       const tokens = await this.generateTokens(
          user.id,
          session.id,
-         session.jti,
+         session.token,
       );
-      this.setRefreshToken(res, tokens.refreshToken, tokens.refreshExpiresIn);
+      // this.setRefreshToken(res, tokens.refreshToken, tokens.refreshExpiresIn);
 
       return {
          user,
@@ -101,10 +101,10 @@ export class AuthService {
    /**
     * Validate refresh token and rotate session if valid.
     */
-   async validateRefreshToken(sessionId: string, jti: string) {
+   async validateRefreshToken(sessionId: string, token: string) {
       const session = await this.usersService.checkSessionValidity(
          sessionId,
-         jti,
+         token,
       );
 
       return this.usersService.rotateSession(session);
@@ -116,11 +116,15 @@ export class AuthService {
    async reissueTokens(
       userId: string,
       sessionId: string,
-      jti: string,
+      token: string,
       res: Response,
    ) {
-      const session = await this.validateRefreshToken(sessionId, jti);
-      const tokens = await this.generateTokens(userId, session.id, session.jti);
+      const session = await this.validateRefreshToken(sessionId, token);
+      const tokens = await this.generateTokens(
+         userId,
+         session.id,
+         session.token,
+      );
 
       this.setRefreshToken(res, tokens.refreshToken, tokens.refreshExpiresIn);
 
@@ -133,10 +137,10 @@ export class AuthService {
    private async generateTokens(
       userId: string,
       sessionId: string,
-      jti: string,
+      token: string,
    ) {
       const accessPayload = { sub: userId, session: sessionId };
-      const refreshPayload = { sub: userId, session: sessionId, jti };
+      const refreshPayload = { sub: userId, session: sessionId, token };
 
       const [accessToken, refreshToken] = await Promise.all([
          this.jwtService.signAsync(accessPayload, {

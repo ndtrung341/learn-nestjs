@@ -6,5 +6,5 @@ export type JwtAccessPayload = {
 };
 
 export type JwtRefreshPayload = JwtAccessPayload & {
-   jti: string;
+   token: string;
 };

@@ -56,8 +56,8 @@ export class AuthController {
       @CurrentUser() payload: JwtRefreshPayload,
       @Res({ passthrough: true }) res: Response,
    ) {
-      const { sub: userId, session: sessionId, jti } = payload;
-      return this.authService.reissueTokens(userId, sessionId, jti, res);
+      const { sub: userId, session: sessionId, token } = payload;
+      return this.authService.reissueTokens(userId, sessionId, token, res);
    }
 
    @Get('logout')

@@ -24,6 +24,7 @@ import ms from 'ms';
 
 import { createCacheKey } from '@utils/cache';
 import { CACHE_KEY } from '@constants/app.constants';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class UsersService {
@@ -37,7 +38,7 @@ export class UsersService {
    ) {}
 
    /**
-    * Creates a new user with a verification token.
+    * Create a new user with a verification token.
     */
    async create(dto: CreateUserDto) {
       const existingUser = await this.findOneByEmail(dto.email);
@@ -56,7 +57,7 @@ export class UsersService {
    }
 
    /**
-    * Updates user details.
+    * Update user details.
     */
    async update(id: string, dto: UpdateUserDto) {
       const user = await this.userRepository.findOneBy({ id });
@@ -64,7 +65,7 @@ export class UsersService {
    }
 
    /**
-    * Finds a user by email.
+    * Find a user by email.
     */
    async findOneByEmail(email: string) {
       return this.userRepository.findOne({
@@ -73,14 +74,14 @@ export class UsersService {
    }
 
    /**
-    * Finds a user by ID.
+    * Find a user by ID.
     */
    async findOneById(id: string) {
       return this.userRepository.findOneBy({ id });
    }
 
    /**
-    * Verifies a user's email using a token.
+    * Verify a user's email using a token.
     */
    async verify(token: string) {
       const user = await this.userRepository.findOneBy({ verifyToken: token });
@@ -101,7 +102,7 @@ export class UsersService {
    }
 
    /**
-    * Creates a new user session.
+    * Create a new user session.
     */
    async createSession(userId: string) {
       const expiresIn = +ms(
@@ -110,29 +111,42 @@ export class UsersService {
 
       const session = this.sessionRepository.create({
          userId,
-         jti: uuidv4(),
+         token: uuidv4(),
          expiresIn,
       });
       return this.sessionRepository.save(session);
    }
 
    /*
-    * Rotates a session every refresh token
+    * Rotate a session every refresh token
     */
    async rotateSession(session: SessionEntity) {
-      session.jti = uuidv4();
+      session.token = uuidv4();
       return this.sessionRepository.save(session);
    }
 
    /**
-    * Removes a session by ID.
+    * Remove a session by ID.
     */
    async removeSession(sessionId: string) {
       return this.sessionRepository.delete({ id: sessionId });
    }
 
    /**
-    * Checks if a session is blacklisted.
+    * Removes expired or invalid sessions every day at 6 AM.
+    */
+   @Cron('0 06 * * *')
+   async removeExpiredSessions() {
+      this.sessionRepository
+         .createQueryBuilder()
+         .delete()
+         .where('invalid = :invalid', { invalid: true })
+         .orWhere("NOW() > updated_at + (expires_in * INTERVAL '1 ms')")
+         .execute();
+   }
+
+   /**
+    * Check if a session is blacklisted.
     */
    async isSessionBlacklisted(sessionId: string) {
       const result = await this.cacheManager.get<boolean>(
@@ -143,7 +157,7 @@ export class UsersService {
    }
 
    /**
-    * Invalidates a session and adds it to the blacklist
+    * Invalidate a session and adds it to the blacklist
     */
    async blacklistSession(session: SessionEntity) {
       const ttl = session.expiresIn - dayjs().diff(session.updatedAt, 'ms');
@@ -156,9 +170,9 @@ export class UsersService {
    }
 
    /**
-    * Checks if a session is valid and active.
+    * Check if a session is valid and active.
     */
-   async checkSessionValidity(sessionId: string, jti: string) {
+   async checkSessionValidity(sessionId: string, token: string) {
       if (await this.isSessionBlacklisted(sessionId)) {
          throw new SessionBlacklistedException();
       }
@@ -168,7 +182,7 @@ export class UsersService {
          throw new SessionNotFoundException();
       }
 
-      if (session.invalid || session.jti !== jti) {
+      if (session.invalid || session.token !== token) {
          await this.blacklistSession(session);
          throw new SessionInvalidException();
       }

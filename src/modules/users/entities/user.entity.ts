@@ -1,7 +1,8 @@
 import { BaseEntity } from '@db/entities/base.entity';
 import { Exclude } from 'class-transformer';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import * as passwordUtils from '@utils/password';
+import { SessionEntity } from './session.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -34,6 +35,9 @@ export class UserEntity extends BaseEntity {
    @Exclude()
    @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })
    verifyExpires?: Date;
+
+   @OneToMany(() => SessionEntity, (session) => session.user)
+   sessions: SessionEntity[];
 
    @BeforeInsert()
    @BeforeUpdate()
