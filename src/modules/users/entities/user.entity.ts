@@ -1,16 +1,24 @@
 import { BaseEntity } from '@db/entities/base.entity';
 import { Exclude } from 'class-transformer';
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
+import {
+   BeforeInsert,
+   BeforeUpdate,
+   Column,
+   Entity,
+   Index,
+   OneToMany,
+} from 'typeorm';
 import * as passwordUtils from '@utils/password';
 import { SessionEntity } from './session.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
+   @Index()
    @Column({ unique: true })
    email: string;
 
-   @Column()
    @Exclude()
+   @Column()
    password: string;
 
    @Column({ name: 'first_name' })
@@ -29,20 +37,22 @@ export class UserEntity extends BaseEntity {
    isVerified: boolean;
 
    @Exclude()
-   @Column({ name: 'verify_token', nullable: true })
-   verifyToken: string;
+   @Index()
+   @Column({ name: 'verify_token', type: 'uuid', nullable: true })
+   verifyToken: string | null;
 
    @Exclude()
    @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })
-   verifyExpires?: Date;
+   verifyExpires: Date | null;
 
    @Exclude()
-   @Column({ name: 'reset_token', nullable: true })
-   resetToken: string;
+   @Index()
+   @Column({ name: 'reset_token', type: 'uuid', nullable: true })
+   resetToken: string | null;
 
    @Exclude()
    @Column({ name: 'reset_expires', type: 'timestamptz', nullable: true })
-   resetExpires: Date;
+   resetExpires: Date | null;
 
    @OneToMany(() => SessionEntity, (session) => session.user)
    sessions: SessionEntity[];

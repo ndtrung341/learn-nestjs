@@ -1,4 +1,4 @@
-import { InvalidTokenException } from '@common/exceptions/auth.exception';
+import { InvalidTokenException } from '@common/exceptions/token.exception';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';

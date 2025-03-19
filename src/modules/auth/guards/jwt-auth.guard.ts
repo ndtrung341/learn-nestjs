@@ -1,4 +1,4 @@
-import { InvalidTokenException } from '@common/exceptions/auth.exception';
+import { InvalidTokenException } from '@common/exceptions/token.exception';
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 

@@ -1,5 +1,5 @@
 import { IS_PUBLIC_KEY } from '@common/decorators/auth.decorators';
-import { InvalidTokenException } from '@common/exceptions/auth.exception';
+import { InvalidTokenException } from '@common/exceptions/token.exception';
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';

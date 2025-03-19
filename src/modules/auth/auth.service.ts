@@ -1,8 +1,4 @@
-import {
-   BadRequestException,
-   Injectable,
-   UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
@@ -19,8 +15,6 @@ import {
    InvalidCredentialsException,
    SessionNotFoundException,
 } from '@common/exceptions/auth.exception';
-import { Cron } from '@nestjs/schedule';
-import { UserNotFoundException } from '@common/exceptions/user.exception';
 
 @Injectable()
 export class AuthService {
@@ -42,10 +36,10 @@ export class AuthService {
     * Registers a new user and sends a verification email.
     */
    async register(dto: RegisterDto) {
-      const user = await this.usersService.create(dto);
+      const user = await this.usersService.createUser(dto);
       await this.mailService.sendVerificationEmail(
          user.email,
-         user.verifyToken,
+         user.verifyToken!,
       );
       return user;
    }
@@ -53,7 +47,7 @@ export class AuthService {
    /**
     * Authenticates a user and issues tokens.
     */
-   async login(dto: LoginDto, res?: Response) {
+   async login(dto: LoginDto, res: Response) {
       const user = await this.validateUser(dto.email, dto.password);
 
       if (!user) throw new InvalidCredentialsException();
@@ -65,7 +59,12 @@ export class AuthService {
          session.id,
          session.token,
       );
-      // this.setRefreshToken(res, tokens.refreshToken, tokens.refreshExpiresIn);
+
+      this.setRefreshTokenCookie(
+         res,
+         tokens.refreshToken,
+         tokens.refreshExpiresIn,
+      );
 
       return {
          user,
@@ -78,7 +77,7 @@ export class AuthService {
     * Logs out by invalidating the session and clearing cookies.
     */
    async logout(sessionId: string, res: Response) {
-      const result = await this.usersService.removeSession(sessionId);
+      const result = await this.usersService.deleteSession(sessionId);
       if (result.affected === 0) throw new SessionNotFoundException();
       res.clearCookie('refresh_token');
    }
@@ -95,23 +94,23 @@ export class AuthService {
     * Verifies a user's email
     */
    async verifyEmail(token: string) {
-      await this.usersService.verify(token);
+      await this.usersService.verifyEmailToken(token);
    }
 
    /**
     * Check if an access token is valid.
     */
    async validateAccessToken(sessionId: string) {
-      const blacklisted =
+      const isBlacklisted =
          await this.usersService.isSessionBlacklisted(sessionId);
-      return !blacklisted;
+      return !isBlacklisted;
    }
 
    /**
     * Validate refresh token and rotate session if valid.
     */
-   async validateRefreshToken(sessionId: string, token: string) {
-      const session = await this.usersService.checkSessionValidity(
+   async validateAndRotateSession(sessionId: string, token: string) {
+      const session = await this.usersService.validateSessionToken(
          sessionId,
          token,
       );
@@ -122,20 +121,24 @@ export class AuthService {
    /**
     * Reissues authentication tokens if the session is valid.
     */
-   async reissueTokens(
+   async refreshTokens(
       userId: string,
       sessionId: string,
       token: string,
       res: Response,
    ) {
-      const session = await this.validateRefreshToken(sessionId, token);
+      const session = await this.validateAndRotateSession(sessionId, token);
       const tokens = await this.generateTokens(
          userId,
          session.id,
          session.token,
       );
 
-      this.setRefreshToken(res, tokens.refreshToken, tokens.refreshExpiresIn);
+      this.setRefreshTokenCookie(
+         res,
+         tokens.refreshToken,
+         tokens.refreshExpiresIn,
+      );
 
       return { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn };
    }
@@ -173,7 +176,7 @@ export class AuthService {
    /**
     * Sets the refresh token in HTTP-only cookies.
     */
-   private setRefreshToken(res: Response, token: string, maxAge: number) {
+   private setRefreshTokenCookie(res: Response, token: string, maxAge: number) {
       res.cookie('refresh_token', token, {
          httpOnly: true,
          sameSite: 'strict',
@@ -183,10 +186,17 @@ export class AuthService {
    }
 
    /**
-    * Send a password reset email to the user.
+    * Initiates password reset process by sending email with reset token.
     */
-   async forgotPassword(email: string) {
-      const token = await this.usersService.createPasswordResetToken(email);
+   async initiatePasswordReset(email: string) {
+      const token = await this.usersService.generatePasswordResetToken(email);
       await this.mailService.sendPasswordResetEmail(email, token);
+   }
+
+   /**
+    * Completes password reset process by verifying token and setting new password.
+    */
+   async completePasswordReset(token: string, newPassword: string) {
+      return this.usersService.resetPassword(token, newPassword);
    }
 }

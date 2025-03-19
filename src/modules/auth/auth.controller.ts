@@ -17,6 +17,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { JwtRefreshPayload } from './types/jwt-payload.type';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -58,7 +59,7 @@ export class AuthController {
       @Res({ passthrough: true }) res: Response,
    ) {
       const { sub: userId, session: sessionId, token } = payload;
-      return this.authService.reissueTokens(userId, sessionId, token, res);
+      return this.authService.refreshTokens(userId, sessionId, token, res);
    }
 
    @Get('logout')
@@ -76,9 +77,15 @@ export class AuthController {
       return this.authService.getCurrentUser(id);
    }
 
-   @Get('forgot-password')
+   @Post('forgot-password')
    @ApiPublic({ message: 'Password reset email has been sent.' })
    forgotPassword(@Body() dto: ForgotPasswordDto) {
-      return this.authService.forgotPassword(dto.email);
+      return this.authService.initiatePasswordReset(dto.email);
+   }
+
+   @Post('reset-password')
+   @ApiPublic({ message: 'Reset password successfully' })
+   resetPassword(@Body() dto: ResetPasswordDto) {
+      return this.authService.completePasswordReset(dto.token, dto.password);
    }
 }

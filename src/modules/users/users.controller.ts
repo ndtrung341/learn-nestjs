@@ -7,12 +7,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
    constructor(private readonly usersService: UsersService) {}
 
+   @Post()
    @ApiPrivate({
       statusCode: HttpStatus.CREATED,
       message: 'User successfully created',
    })
-   @Post()
    createUser(@Body() createUserDto: CreateUserDto) {
-      return this.usersService.create(createUserDto);
+      return this.usersService.createUser(createUserDto);
    }
 }

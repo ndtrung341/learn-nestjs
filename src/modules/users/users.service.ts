@@ -12,7 +12,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import {
    EmailAlreadyExistsException,
    EmailAlreadyVerifiedException,
-   InvalidVerificationTokenException,
    SessionBlacklistedException,
    SessionInvalidException,
    SessionNotFoundException,
@@ -24,8 +23,12 @@ import ms from 'ms';
 
 import { createCacheKey } from '@utils/cache';
 import { CACHE_KEY } from '@constants/app.constants';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { UserNotFoundException } from '@common/exceptions/user.exception';
+import {
+   InvalidResetPasswordTokenException,
+   InvalidVerificationTokenException,
+} from '@common/exceptions/token.exception';
 
 @Injectable()
 export class UsersService {
@@ -41,11 +44,12 @@ export class UsersService {
    /**
     * Create a new user with a verification token.
     */
-   async create(dto: CreateUserDto) {
+   async createUser(dto: CreateUserDto) {
       const existingUser = await this.findOneByEmail(dto.email);
       if (existingUser) {
          throw new EmailAlreadyExistsException();
       }
+
       const verifyToken = uuidv4();
       const verifyExpires = dayjs().add(5, 'm').toDate();
 
@@ -61,7 +65,7 @@ export class UsersService {
    /**
     * Update user details.
     */
-   async update(id: string, dto: UpdateUserDto) {
+   async updateUser(id: string, dto: UpdateUserDto) {
       const user = await this.userRepository.findOneBy({ id });
       return await this.userRepository.save({ ...user, ...dto });
    }
@@ -85,20 +89,20 @@ export class UsersService {
    /**
     * Verify a user's email using a token.
     */
-   async verify(token: string) {
+   async verifyEmailToken(token: string) {
       const user = await this.userRepository.findOneBy({ verifyToken: token });
-      if (!user) {
+
+      if (!user || dayjs().isAfter(user.verifyExpires)) {
          throw new InvalidVerificationTokenException();
       }
+
       if (user.isVerified) {
          throw new EmailAlreadyVerifiedException();
       }
-      if (dayjs().isAfter(user.verifyExpires)) {
-         throw new InvalidVerificationTokenException();
-      }
+
       return this.userRepository.update(user.id, {
-         verifyToken: undefined,
-         verifyExpires: undefined,
+         verifyToken: null,
+         verifyExpires: null,
          isVerified: true,
       });
    }
@@ -130,7 +134,7 @@ export class UsersService {
    /**
     * Remove a session by ID.
     */
-   async removeSession(sessionId: string) {
+   async deleteSession(sessionId: string) {
       return this.sessionRepository.delete({ id: sessionId });
    }
 
@@ -138,7 +142,7 @@ export class UsersService {
     * Remove expired or invalid sessions every day at 6 AM.
     */
    @Cron('0 06 * * *')
-   async removeExpiredSessions() {
+   async cleanupExpiredSessions() {
       this.sessionRepository
          .createQueryBuilder()
          .delete()
@@ -174,7 +178,7 @@ export class UsersService {
    /**
     * Check if a session is valid and active.
     */
-   async checkSessionValidity(sessionId: string, token: string) {
+   async validateSessionToken(sessionId: string, token: string) {
       if (await this.isSessionBlacklisted(sessionId)) {
          throw new SessionBlacklistedException();
       }
@@ -195,7 +199,7 @@ export class UsersService {
    /**
     * Generates a password reset token.
     */
-   async createPasswordResetToken(email: string) {
+   async generatePasswordResetToken(email: string) {
       const resetToken = uuidv4();
       const resetExpires = dayjs().add(5, 'minutes').toDate();
 
@@ -209,5 +213,22 @@ export class UsersService {
       }
 
       return resetToken;
+   }
+
+   /**
+    * Reset the user's password using reset token.
+    */
+   async resetPassword(token: string, newPassword: string) {
+      const user = await this.userRepository.findOneBy({ resetToken: token });
+
+      if (!user || dayjs().isAfter(user.resetExpires)) {
+         throw new InvalidResetPasswordTokenException();
+      }
+
+      user.password = newPassword;
+      user.resetToken = null;
+      user.resetExpires = null;
+
+      return this.userRepository.save(user);
    }
 }
