@@ -25,6 +25,7 @@ import ms from 'ms';
 import { createCacheKey } from '@utils/cache';
 import { CACHE_KEY } from '@constants/app.constants';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UserNotFoundException } from '@common/exceptions/user.exception';
 
 @Injectable()
 export class UsersService {
@@ -46,13 +47,14 @@ export class UsersService {
          throw new EmailAlreadyExistsException();
       }
       const verifyToken = uuidv4();
-      const verifyExpires = new Date();
-      verifyExpires.setMinutes(verifyExpires.getMinutes() + 2);
+      const verifyExpires = dayjs().add(5, 'm').toDate();
+
       const newUser = this.userRepository.create({
          ...dto,
          verifyToken,
          verifyExpires,
       });
+
       return this.userRepository.save(newUser);
    }
 
@@ -133,7 +135,7 @@ export class UsersService {
    }
 
    /**
-    * Removes expired or invalid sessions every day at 6 AM.
+    * Remove expired or invalid sessions every day at 6 AM.
     */
    @Cron('0 06 * * *')
    async removeExpiredSessions() {
@@ -188,5 +190,24 @@ export class UsersService {
       }
 
       return session;
+   }
+
+   /**
+    * Generates a password reset token.
+    */
+   async createPasswordResetToken(email: string) {
+      const resetToken = uuidv4();
+      const resetExpires = dayjs().add(5, 'minutes').toDate();
+
+      const { affected } = await this.userRepository.update(
+         { email },
+         { resetToken, resetExpires },
+      );
+
+      if (!affected) {
+         throw new UserNotFoundException();
+      }
+
+      return resetToken;
    }
 }

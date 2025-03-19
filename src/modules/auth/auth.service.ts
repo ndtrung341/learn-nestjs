@@ -20,6 +20,7 @@ import {
    SessionNotFoundException,
 } from '@common/exceptions/auth.exception';
 import { Cron } from '@nestjs/schedule';
+import { UserNotFoundException } from '@common/exceptions/user.exception';
 
 @Injectable()
 export class AuthService {
@@ -29,12 +30,20 @@ export class AuthService {
       private mailService: MailService,
       private jwtService: JwtService,
    ) {}
+
+   /**
+    * Retrieves the current user.
+    */
+   async getCurrentUser(id: string) {
+      return this.usersService.findOneById(id);
+   }
+
    /**
     * Registers a new user and sends a verification email.
     */
    async register(dto: RegisterDto) {
       const user = await this.usersService.create(dto);
-      await this.mailService.sendEmailVerification(
+      await this.mailService.sendVerificationEmail(
          user.email,
          user.verifyToken,
       );
@@ -171,5 +180,13 @@ export class AuthService {
          path: `${this.configService.get('app.prefix')}/auth/refresh`,
          maxAge,
       });
+   }
+
+   /**
+    * Send a password reset email to the user.
+    */
+   async forgotPassword(email: string) {
+      const token = await this.usersService.createPasswordResetToken(email);
+      await this.mailService.sendPasswordResetEmail(email, token);
    }
 }

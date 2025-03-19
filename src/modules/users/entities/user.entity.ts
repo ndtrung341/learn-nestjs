@@ -36,6 +36,14 @@ export class UserEntity extends BaseEntity {
    @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })
    verifyExpires?: Date;
 
+   @Exclude()
+   @Column({ name: 'reset_token', nullable: true })
+   resetToken: string;
+
+   @Exclude()
+   @Column({ name: 'reset_expires', type: 'timestamptz', nullable: true })
+   resetExpires: Date;
+
    @OneToMany(() => SessionEntity, (session) => session.user)
    sessions: SessionEntity[];
 
