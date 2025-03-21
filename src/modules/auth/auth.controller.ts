@@ -9,15 +9,20 @@ import {
    UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { AuthService } from './auth.service';
-import { ApiPrivate, ApiPublic } from '@common/decorators/http.decorators';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+
 import { CurrentUser } from '@common/decorators/current-user.decorator';
-import { JwtRefreshPayload } from './types/jwt-payload.type';
+import { ApiPrivate, ApiPublic } from '@common/decorators/http.decorators';
+
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+
+import { AuthService } from './auth.service';
+
+import { JwtRefreshPayload } from './types/jwt-payload.type';
 
 @Controller('auth')
 export class AuthController {

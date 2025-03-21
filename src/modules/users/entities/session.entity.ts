@@ -1,4 +1,3 @@
-import { BaseEntity } from '@db/entities/base.entity';
 import {
    BeforeInsert,
    BeforeUpdate,
@@ -6,9 +5,11 @@ import {
    Entity,
    JoinColumn,
    ManyToOne,
+   Relation,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import crypto from 'crypto';
+import { BaseEntity } from '@db/entities/base.entity';
 
 @Entity({ name: 'session' })
 export class SessionEntity extends BaseEntity {
@@ -24,9 +25,9 @@ export class SessionEntity extends BaseEntity {
    @Column({ type: 'uuid', name: 'user_id' })
    userId: string;
 
-   @ManyToOne(() => UserEntity)
+   @ManyToOne(() => UserEntity, (user) => user.sessions)
    @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'FK_SESSION_USER' })
-   user: UserEntity;
+   user: Relation<UserEntity>;
 
    @BeforeInsert()
    @BeforeUpdate()

@@ -28,7 +28,7 @@ export class StandardizeTrInterceptor implements NestInterceptor {
       return next.handle().pipe(
          map((responseData) => {
             let data: any = null;
-            let meta: any = null;
+            let meta: any = {};
 
             if (responseData && typeof responseData === 'object') {
                // Assign data and meta from responseData
@@ -37,6 +37,7 @@ export class StandardizeTrInterceptor implements NestInterceptor {
             } else {
                // Handle primitive data types
                data = responseData;
+               meta = undefined;
             }
 
             return {

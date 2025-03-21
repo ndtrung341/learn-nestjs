@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { UsersService } from './services/users.service';
 import { ApiPrivate } from '@common/decorators/http.decorators';
 import { CreateUserDto } from './dto/create-user.dto';
 

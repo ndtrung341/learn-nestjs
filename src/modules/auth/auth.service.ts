@@ -4,7 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import ms from 'ms';
 
-import { UsersService } from '@modules/users/users.service';
+import { UsersService } from '@modules/users/services/users.service';
+import { SessionsService } from '@modules/users/services/sessions.service';
 import { MailService } from '@modules/mail/mail.service';
 
 import { RegisterDto } from './dto/register.dto';
@@ -13,7 +14,6 @@ import { LoginDto } from './dto/login.dto';
 import {
    EmailNotVerifiedException,
    InvalidCredentialsException,
-   SessionNotFoundException,
 } from '@common/exceptions/auth.exception';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class AuthService {
    constructor(
       private configService: ConfigService,
       private usersService: UsersService,
+      private sessionsService: SessionsService,
       private mailService: MailService,
       private jwtService: JwtService,
    ) {}
@@ -39,7 +40,7 @@ export class AuthService {
       const user = await this.usersService.createUser(dto);
       await this.mailService.sendVerificationEmail(
          user.email,
-         user.verifyToken!,
+         user.verifyToken,
       );
       return user;
    }
@@ -53,7 +54,7 @@ export class AuthService {
       if (!user) throw new InvalidCredentialsException();
       if (!user.isVerified) throw new EmailNotVerifiedException();
 
-      const session = await this.usersService.createSession(user.id);
+      const session = await this.sessionsService.createSession(user.id);
       const tokens = await this.generateTokens(
          user.id,
          session.id,
@@ -77,8 +78,7 @@ export class AuthService {
     * Logs out by invalidating the session and clearing cookies.
     */
    async logout(sessionId: string, res: Response) {
-      const result = await this.usersService.deleteSession(sessionId);
-      if (result.affected === 0) throw new SessionNotFoundException();
+      await this.sessionsService.deleteSession(sessionId);
       res.clearCookie('refresh_token');
    }
 
@@ -102,7 +102,7 @@ export class AuthService {
     */
    async validateAccessToken(sessionId: string) {
       const isBlacklisted =
-         await this.usersService.isSessionBlacklisted(sessionId);
+         await this.sessionsService.isSessionBlacklisted(sessionId);
       return !isBlacklisted;
    }
 
@@ -110,12 +110,12 @@ export class AuthService {
     * Validate refresh token and rotate session if valid.
     */
    async validateAndRotateSession(sessionId: string, token: string) {
-      const session = await this.usersService.validateSessionToken(
+      const session = await this.sessionsService.validateSessionToken(
          sessionId,
          token,
       );
 
-      return this.usersService.rotateSession(session);
+      return this.sessionsService.rotateSession(session);
    }
 
    /**
@@ -140,7 +140,10 @@ export class AuthService {
          tokens.refreshExpiresIn,
       );
 
-      return { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn };
+      return {
+         accessToken: tokens.accessToken,
+         expiresIn: tokens.expiresIn,
+      };
    }
 
    /**
@@ -154,22 +157,27 @@ export class AuthService {
       const accessPayload = { sub: userId, session: sessionId };
       const refreshPayload = { sub: userId, session: sessionId, token };
 
+      const secret = this.configService.get('auth.secret');
+      const expiresIn = this.configService.get('auth.expiresIn');
+      const refreshSecret = this.configService.get('auth.refreshSecret');
+      const refreshExpiresIn = this.configService.get('auth.refreshExpiresIn');
+
       const [accessToken, refreshToken] = await Promise.all([
          this.jwtService.signAsync(accessPayload, {
-            secret: this.configService.get<string>('jwt.secret'),
-            expiresIn: this.configService.get('jwt.expires'),
+            secret,
+            expiresIn,
          }),
          this.jwtService.signAsync(refreshPayload, {
-            secret: this.configService.get<string>('jwt.refreshSecret'),
-            expiresIn: this.configService.get('jwt.refreshExpires'),
+            secret: refreshSecret,
+            expiresIn: refreshExpiresIn,
          }),
       ]);
 
       return {
          accessToken,
-         expiresIn: +ms(this.configService.get('jwt.expires')!),
+         expiresIn,
          refreshToken,
-         refreshExpiresIn: +ms(this.configService.get('jwt.refreshExpires')!),
+         refreshExpiresIn,
       };
    }
 

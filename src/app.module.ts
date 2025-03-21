@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 
 import { AuthModule } from '@modules/auth/auth.module';
 import { UsersModule } from '@modules/users/users.module';
-
-import configuration from '@config/configuration';
-import { validateEnv } from '@utils/validate-env';
 import { SharedModule } from '@shared/shared.module';
 import { DatabaseModule } from '@db/database.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { ScheduleModule } from '@nestjs/schedule';
+
+import { appConfig } from '@config/app.config';
+import { authConfig } from '@config/auth.config';
+import { dbConfig } from '@config/db.config';
+import { mailConfig } from '@config/mail.config';
 
 @Module({
    imports: [
@@ -19,8 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
          isGlobal: true,
          cache: true,
          expandVariables: true,
-         load: [configuration],
-         validate: validateEnv,
+         load: [appConfig, authConfig, dbConfig, mailConfig],
       }),
       CacheModule.register({ isGlobal: true }),
       ScheduleModule.forRoot(),

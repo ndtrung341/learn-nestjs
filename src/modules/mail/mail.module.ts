@@ -20,7 +20,7 @@ import { join } from 'path';
                   },
                },
                defaults: {
-                  from: `'${config.get('mail.fromName')}' <${config.get('mail.from')}>`,
+                  from: `'${config.get('mail.fromName')}' <${config.get('mail.fromAddress')}>`,
                },
                template: {
                   dir: join(__dirname, 'templates'),

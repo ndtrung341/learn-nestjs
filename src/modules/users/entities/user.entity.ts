@@ -7,6 +7,7 @@ import {
    Entity,
    Index,
    OneToMany,
+   Relation,
 } from 'typeorm';
 import * as passwordUtils from '@utils/password';
 import { SessionEntity } from './session.entity';
@@ -55,7 +56,7 @@ export class UserEntity extends BaseEntity {
    resetExpires: Date | null;
 
    @OneToMany(() => SessionEntity, (session) => session.user)
-   sessions: SessionEntity[];
+   sessions: Relation<SessionEntity[]>;
 
    @BeforeInsert()
    @BeforeUpdate()

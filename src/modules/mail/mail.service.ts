@@ -3,46 +3,59 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+enum EmailTemplate {
+   VERIFICATION = 'email-verification',
+   PASSWORD_RESET = 'reset-password',
+}
+
 @Injectable()
 export class MailService {
-   private endpoint: string;
+   private readonly apiUrl: string;
+   private readonly clientUrl: string;
 
    constructor(
       private readonly config: ConfigService,
       private readonly mailer: MailerService,
    ) {
-      this.endpoint =
-         this.config.get('app.baseUrl') + this.config.get('app.prefix');
+      const { url, prefix, clientUrl } = this.config.get('app');
+      this.apiUrl = `${url}/${prefix}`;
+      this.clientUrl = clientUrl;
    }
 
    async sendVerificationEmail(email: string, token: string) {
-      try {
-         const url = `${this.endpoint}/auth/verify?token=${token}`;
+      const url = `${this.apiUrl}/auth/verify?token=${token}`;
 
-         await this.mailer.sendMail({
-            to: email,
-            subject: 'Email Verification - MyApp',
-            template: 'email-verification',
-            context: {
-               url,
-            },
-         });
-      } catch (error) {
-         throw new MailSendFailedException(error.message);
-      }
+      return this.sendEmail(
+         email,
+         'Email Verification - MyApp',
+         EmailTemplate.VERIFICATION,
+         { url },
+      );
    }
 
    async sendPasswordResetEmail(email: string, token: string) {
-      try {
-         const url = `https://your-frontend.com/reset-password?token=${token}`;
+      const url = `${this.clientUrl}/reset-password?token=${token}`;
 
+      return this.sendEmail(
+         email,
+         'Reset Your Password – MyApp',
+         EmailTemplate.PASSWORD_RESET,
+         { url },
+      );
+   }
+
+   private async sendEmail(
+      to: string,
+      subject: string,
+      template: EmailTemplate,
+      context?: Record<string, any> | any,
+   ) {
+      try {
          await this.mailer.sendMail({
-            to: email,
-            subject: 'Reset Your Password – MyApp',
-            template: 'reset-password',
-            context: {
-               url,
-            },
+            to,
+            subject,
+            template,
+            context,
          });
       } catch (error) {
          throw new MailSendFailedException(error.message);

@@ -17,7 +17,8 @@ async function bootstrap() {
 
    app.use(cookieParser());
 
-   app.setGlobalPrefix('api');
+   app.setGlobalPrefix(config.get('app.prefix'));
+
    app.useGlobalGuards(new AuthGuard(reflector));
    app.useGlobalInterceptors(
       new CamelSnakeInterceptor(),
