@@ -17,7 +17,13 @@
       "test:watch": "jest --watch",
       "test:cov": "jest --coverage",
       "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-      "test:e2e": "jest --config ./test/jest-e2e.json"
+      "test:e2e": "jest --config ./test/jest-e2e.json",
+      "typeorm": "env-cmd typeorm-ts-node-commonjs -d src/database/data-source.ts",
+      "migration:create": "npm run typeorm -- migration:create src/database/migrations/%npm_config_name%",
+      "migration:generate": "npm run typeorm -- migration:generate --pretty src/database/migrations/%npm_config_name%",
+      "migration:run": "npm run typeorm migration:run",
+      "migration:revert": "npm run typeorm migration:revert",
+      "migration:show": "npm run typeorm migration:show"
    },
    "dependencies": {
       "@nestjs-modules/mailer": "^2.0.2",
@@ -64,6 +70,8 @@
       "@types/passport-jwt": "^4.0.1",
       "@types/passport-local": "^1.0.38",
       "@types/supertest": "^6.0.2",
+      "cross-env": "^7.0.3",
+      "env-cmd": "^10.1.0",
       "eslint": "^9.18.0",
       "eslint-config-prettier": "^10.0.1",
       "eslint-plugin-prettier": "^5.2.2",

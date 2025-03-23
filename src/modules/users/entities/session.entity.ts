@@ -23,11 +23,11 @@ export class SessionEntity extends BaseEntity {
    expiresIn: number;
 
    @Column({ type: 'uuid', name: 'user_id' })
-   userId: string;
+   userId!: string;
 
    @ManyToOne(() => UserEntity, (user) => user.sessions)
    @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'FK_SESSION_USER' })
-   user: Relation<UserEntity>;
+   user!: Relation<UserEntity>;
 
    @BeforeInsert()
    @BeforeUpdate()
