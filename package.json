@@ -23,9 +23,11 @@
       "migration:generate": "npm run typeorm -- migration:generate --pretty src/database/migrations/%npm_config_name%",
       "migration:run": "npm run typeorm migration:run",
       "migration:revert": "npm run typeorm migration:revert",
-      "migration:show": "npm run typeorm migration:show"
+      "migration:show": "npm run typeorm migration:show",
+      "seed:run": "env-cmd ts-node src/database/seeds/run.ts"
    },
    "dependencies": {
+      "@faker-js/faker": "^9.6.0",
       "@nestjs-modules/mailer": "^2.0.2",
       "@nestjs/cache-manager": "^3.0.0",
       "@nestjs/common": "^11.0.1",
