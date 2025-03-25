@@ -8,7 +8,7 @@ import {
    Index,
    OneToMany,
 } from 'typeorm';
-import * as passwordUtils from '@utils/password';
+import * as hashUtil from '@utils/bcrypt';
 import { SessionEntity } from './session.entity';
 
 @Entity('user')
@@ -33,8 +33,8 @@ export class UserEntity extends BaseEntity {
    @Column({ default: '' })
    image?: string;
 
-   @Column({ name: 'is_verified', default: false })
-   isVerified: boolean;
+   @Column({ name: 'email_verified', default: false })
+   emailVerified: boolean;
 
    @Exclude()
    @Index()
@@ -61,11 +61,16 @@ export class UserEntity extends BaseEntity {
    @BeforeUpdate()
    async hashPass() {
       if (this.password) {
-         this.password = await passwordUtils.hashPassword(this.password);
+         this.password = await hashUtil.hash(this.password);
       }
    }
 
    async checkPassword(password: string): Promise<boolean> {
-      return await passwordUtils.comparePassword(password, this.password);
+      return await hashUtil.verify(password, this.password);
+   }
+
+   constructor(data?: Partial<UserEntity>) {
+      super();
+      Object.assign(this, data);
    }
 }

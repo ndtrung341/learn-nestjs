@@ -1,10 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateUserTable1742712206856 implements MigrationInterface {
-    name = 'CreateUserTable1742712206856'
+   name = 'CreateUserTable1742712206856';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+   public async up(queryRunner: QueryRunner): Promise<void> {
+      await queryRunner.query(`
             CREATE TABLE "user" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -15,7 +15,7 @@ export class CreateUserTable1742712206856 implements MigrationInterface {
                 "last_name" character varying NOT NULL,
                 "bio" character varying NOT NULL DEFAULT '',
                 "image" character varying NOT NULL DEFAULT '',
-                "is_verified" boolean NOT NULL DEFAULT false,
+                "email_verified" boolean NOT NULL DEFAULT false,
                 "verify_token" uuid,
                 "verify_expires" TIMESTAMP WITH TIME ZONE,
                 "reset_token" uuid,
@@ -24,30 +24,29 @@ export class CreateUserTable1742712206856 implements MigrationInterface {
                 CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
             )
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             CREATE INDEX "IDX_e12875dfb3b1d92d7d7c5377e2" ON "user" ("email")
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             CREATE INDEX "IDX_66ed4fc9d9dd93b731ee5e7bbd" ON "user" ("verify_token")
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             CREATE INDEX "IDX_bb2b6e1e67308fbea9e5bc1300" ON "user" ("reset_token")
         `);
-    }
+   }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+   public async down(queryRunner: QueryRunner): Promise<void> {
+      await queryRunner.query(`
             DROP INDEX "public"."IDX_bb2b6e1e67308fbea9e5bc1300"
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             DROP INDEX "public"."IDX_66ed4fc9d9dd93b731ee5e7bbd"
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             DROP INDEX "public"."IDX_e12875dfb3b1d92d7d7c5377e2"
         `);
-        await queryRunner.query(`
+      await queryRunner.query(`
             DROP TABLE "user"
         `);
-    }
-
+   }
 }

@@ -1,24 +1,28 @@
-import { DataSource } from 'typeorm';
-import { Seeder } from './type';
 import { UserEntity } from '@modules/users/entities/user.entity';
-import { faker } from '@faker-js/faker';
+import { BaseSeeder } from '@db/core/base.seeder';
+import { UserFactory } from '@db/factories/user.factory';
+import * as hashUtil from '@utils/bcrypt';
 
-export class UserSeeder implements Seeder {
-   static async run(dataSource: DataSource) {
-      const userRepository = dataSource.getRepository(UserEntity);
+export class UserSeeder extends BaseSeeder {
+   async run() {
+      const userRepo = this.dataSource.getRepository(UserEntity);
 
-      const users = Array.from({ length: 5 }).map(() =>
-         userRepository.create({
-            firstName: faker.person.firstName(),
-            lastName: faker.person.lastName(),
-            email: faker.internet.email(),
-            password: faker.internet.password(),
-            bio: faker.person.bio(),
-            image: faker.image.avatar(),
-            isVerified: true,
-         }),
-      );
+      const passwordHash = await hashUtil.hash('Trung@341');
 
-      await userRepository.save(users);
+      const adminUser = userRepo.create({
+         email: 'admin@example.com',
+         password: passwordHash,
+         emailVerified: true,
+         firstName: 'Super',
+         lastName: 'Admin',
+      });
+      await userRepo.save(adminUser, { listeners: false });
+
+      const userFactory = new UserFactory();
+      const randomUsers = userFactory.createMany(4, {
+         password: passwordHash,
+      });
+
+      await userRepo.save(randomUsers);
    }
 }

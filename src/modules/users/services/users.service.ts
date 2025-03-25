@@ -86,14 +86,14 @@ export class UsersService {
          throw new InvalidVerificationTokenException();
       }
 
-      if (user.isVerified) {
+      if (user.emailVerified) {
          throw new EmailAlreadyVerifiedException();
       }
 
       return this.userRepository.update(user.id, {
          verifyToken: null,
          verifyExpires: null,
-         isVerified: true,
+         emailVerified: true,
       });
    }
 

@@ -52,7 +52,7 @@ export class AuthService {
       const user = await this.validateUser(dto.email, dto.password);
 
       if (!user) throw new InvalidCredentialsException();
-      if (!user.isVerified) throw new EmailNotVerifiedException();
+      if (!user.emailVerified) throw new EmailNotVerifiedException();
 
       const session = await this.sessionsService.createSession(user.id);
       const tokens = await this.generateTokens(
