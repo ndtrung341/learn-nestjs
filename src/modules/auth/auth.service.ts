@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import ms from 'ms';
 
 import { UsersService } from '@modules/users/services/users.service';
 import { SessionsService } from '@modules/users/services/sessions.service';
@@ -87,6 +86,7 @@ export class AuthService {
     */
    async validateUser(email: string, password: string) {
       const user = await this.usersService.findOneByEmail(email);
+      console.log(user);
       return user && (await user.checkPassword(password)) ? user : null;
    }
 

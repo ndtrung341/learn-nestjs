@@ -1,14 +1,14 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateUserTable1742712206856 implements MigrationInterface {
-   name = 'CreateUserTable1742712206856';
+export class CreateUserTable1743046309935 implements MigrationInterface {
+   name = 'CreateUserTable1743046309935';
 
    public async up(queryRunner: QueryRunner): Promise<void> {
       await queryRunner.query(`
-            CREATE TABLE "user" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+            CREATE TABLE "users" (
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "email" character varying NOT NULL,
                 "password" character varying NOT NULL,
                 "first_name" character varying NOT NULL,
@@ -20,33 +20,33 @@ export class CreateUserTable1742712206856 implements MigrationInterface {
                 "verify_expires" TIMESTAMP WITH TIME ZONE,
                 "reset_token" uuid,
                 "reset_expires" TIMESTAMP WITH TIME ZONE,
-                CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"),
-                CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
+                CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"),
+                CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id")
             )
         `);
       await queryRunner.query(`
-            CREATE INDEX "IDX_e12875dfb3b1d92d7d7c5377e2" ON "user" ("email")
+            CREATE INDEX "IDX_97672ac88f789774dd47f7c8be" ON "users" ("email")
         `);
       await queryRunner.query(`
-            CREATE INDEX "IDX_66ed4fc9d9dd93b731ee5e7bbd" ON "user" ("verify_token")
+            CREATE INDEX "IDX_5d96c2b4e28dfcd11ab3bbd928" ON "users" ("verify_token")
         `);
       await queryRunner.query(`
-            CREATE INDEX "IDX_bb2b6e1e67308fbea9e5bc1300" ON "user" ("reset_token")
+            CREATE INDEX "IDX_dec0bae70633e911fe6a5983c1" ON "users" ("reset_token")
         `);
    }
 
    public async down(queryRunner: QueryRunner): Promise<void> {
       await queryRunner.query(`
-            DROP INDEX "public"."IDX_bb2b6e1e67308fbea9e5bc1300"
+            DROP INDEX "public"."IDX_dec0bae70633e911fe6a5983c1"
         `);
       await queryRunner.query(`
-            DROP INDEX "public"."IDX_66ed4fc9d9dd93b731ee5e7bbd"
+            DROP INDEX "public"."IDX_5d96c2b4e28dfcd11ab3bbd928"
         `);
       await queryRunner.query(`
-            DROP INDEX "public"."IDX_e12875dfb3b1d92d7d7c5377e2"
+            DROP INDEX "public"."IDX_97672ac88f789774dd47f7c8be"
         `);
       await queryRunner.query(`
-            DROP TABLE "user"
+            DROP TABLE "users"
         `);
    }
 }

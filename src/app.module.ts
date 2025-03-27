@@ -15,6 +15,7 @@ import { appConfig } from '@config/app.config';
 import { authConfig } from '@config/auth.config';
 import { dbConfig } from '@config/db.config';
 import { mailConfig } from '@config/mail.config';
+import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
 @Module({
    imports: [
@@ -30,6 +31,7 @@ import { mailConfig } from '@config/mail.config';
       SharedModule,
       UsersModule,
       AuthModule,
+      WorkspacesModule,
    ],
    controllers: [AppController],
    providers: [AppService],

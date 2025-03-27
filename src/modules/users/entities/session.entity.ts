@@ -5,14 +5,18 @@ import {
    Entity,
    JoinColumn,
    ManyToOne,
+   PrimaryGeneratedColumn,
    Relation,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { BaseEntity } from '@db/core/base.entity';
 import crypto from 'crypto';
-import { BaseEntity } from '@db/entities/base.entity';
 
-@Entity({ name: 'session' })
+@Entity('sessions')
 export class SessionEntity extends BaseEntity {
+   @PrimaryGeneratedColumn('uuid')
+   id: string;
+
    @Column({ type: 'varchar', length: 255 })
    token: string;
 
@@ -25,8 +29,10 @@ export class SessionEntity extends BaseEntity {
    @Column({ type: 'uuid', name: 'user_id' })
    userId!: string;
 
-   @ManyToOne(() => UserEntity, (user) => user.sessions)
-   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'FK_SESSION_USER' })
+   @ManyToOne(() => UserEntity, {
+      onDelete: 'CASCADE',
+   })
+   @JoinColumn({ name: 'user_id' })
    user!: Relation<UserEntity>;
 
    @BeforeInsert()

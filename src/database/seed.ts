@@ -1,5 +1,8 @@
 import { AppDataSource } from './data-source';
 import { UserSeeder } from './seeds/user.seeder';
+import { WorkspaceSeeder } from './seeds/workspace.seeder';
+
+const seeders = [UserSeeder, WorkspaceSeeder];
 
 const centerText = (text: string, width = 50): string => {
    const padLeft = Math.floor((width - text.length) / 2);
@@ -16,7 +19,6 @@ const runSeed = async () => {
 
    const dataSource = await AppDataSource.initialize();
    const startTime = Date.now();
-   const seeders = [UserSeeder];
 
    try {
       for (const Seeder of seeders) {

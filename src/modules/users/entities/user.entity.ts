@@ -1,4 +1,4 @@
-import { BaseEntity } from '@db/entities/base.entity';
+import { BaseEntity } from '@db/core/base.entity';
 import { Exclude } from 'class-transformer';
 import {
    BeforeInsert,
@@ -6,13 +6,15 @@ import {
    Column,
    Entity,
    Index,
-   OneToMany,
+   PrimaryGeneratedColumn,
 } from 'typeorm';
 import * as hashUtil from '@utils/bcrypt';
-import { SessionEntity } from './session.entity';
 
-@Entity('user')
+@Entity('users')
 export class UserEntity extends BaseEntity {
+   @PrimaryGeneratedColumn('uuid')
+   id: string;
+
    @Index()
    @Column({ unique: true })
    email: string;
@@ -53,9 +55,6 @@ export class UserEntity extends BaseEntity {
    @Exclude()
    @Column({ name: 'reset_expires', type: 'timestamptz', nullable: true })
    resetExpires: Date | null;
-
-   @OneToMany(() => SessionEntity, (session) => session.user)
-   sessions?: SessionEntity[];
 
    @BeforeInsert()
    @BeforeUpdate()
