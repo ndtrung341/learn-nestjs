@@ -1,34 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
 
 @Controller('workspaces')
 export class WorkspacesController {
-  constructor(private readonly workspacesService: WorkspacesService) {}
+   constructor(private readonly workspacesService: WorkspacesService) {}
 
-  @Post()
-  create(@Body() createWorkspaceDto: CreateWorkspaceDto) {
-    return this.workspacesService.create(createWorkspaceDto);
-  }
+   @Post()
+   async create(
+      @CurrentUser('sub') userId,
+      @Body() createWorkspaceDto: CreateWorkspaceDto,
+   ) {
+      return this.workspacesService.create(userId, createWorkspaceDto);
+   }
 
-  @Get()
-  findAll() {
-    return this.workspacesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.workspacesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWorkspaceDto: UpdateWorkspaceDto) {
-    return this.workspacesService.update(+id, updateWorkspaceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.workspacesService.remove(+id);
-  }
+   @Get(':id')
+   get(@Param('id') id) {
+      return this.workspacesService.findOne(id);
+   }
 }

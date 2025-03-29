@@ -2,10 +2,10 @@ import { UserEntity } from '@modules/users/entities/user.entity';
 import {
    Column,
    Entity,
-   Index,
    JoinColumn,
    ManyToOne,
    PrimaryGeneratedColumn,
+   Relation,
    Unique,
 } from 'typeorm';
 import { WorkspaceEntity } from './workspace.entity';
@@ -16,18 +16,16 @@ export enum WorkspaceMemberRole {
    NORMAL = 'normal',
 }
 
-@Entity('workspace_members')
-@Unique(['user', 'workspace'])
+@Entity()
+@Unique('UQ_workspace_member', ['userId', 'workspaceId'])
 export class WorkspaceMemberEntity extends BaseEntity {
    @PrimaryGeneratedColumn('uuid')
    id: string;
 
-   @Index()
-   @Column({ name: 'user_id' })
+   @Column()
    userId: string;
 
-   @Index()
-   @Column({ name: 'workspace_id' })
+   @Column()
    workspaceId: string;
 
    @Column({
@@ -38,10 +36,16 @@ export class WorkspaceMemberEntity extends BaseEntity {
    role: WorkspaceMemberRole;
 
    @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
-   @JoinColumn({ name: 'user_id' })
+   @JoinColumn()
    user: UserEntity;
 
-   @ManyToOne(() => WorkspaceEntity, { onDelete: 'CASCADE' })
-   @JoinColumn({ name: 'workspace_id' })
-   workspace: WorkspaceEntity;
+   @ManyToOne(() => WorkspaceEntity, (workspace) => workspace.members, {
+      onDelete: 'CASCADE',
+   })
+   @JoinColumn()
+   workspace: Relation<WorkspaceEntity>;
+
+   constructor(data?: Partial<WorkspaceMemberEntity>) {
+      super(data);
+   }
 }

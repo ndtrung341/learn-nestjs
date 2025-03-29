@@ -1,6 +1,6 @@
-import { AppDataSource } from './data-source';
-import { UserSeeder } from './seeds/user.seeder';
-import { WorkspaceSeeder } from './seeds/workspace.seeder';
+import { AppDataSource } from '../data-source';
+import { UserSeeder } from './user.seeder';
+import { WorkspaceSeeder } from './workspace.seeder';
 
 const seeders = [UserSeeder, WorkspaceSeeder];
 

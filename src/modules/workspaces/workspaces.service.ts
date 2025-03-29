@@ -1,26 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+   WorkspaceEntity,
+   WorkspaceVisibility,
+} from './entities/workspace.entity';
+import {
+   WorkspaceMemberEntity,
+   WorkspaceMemberRole,
+} from './entities/workspace-member.entity';
+import { slugify } from '@utils/string';
 
 @Injectable()
 export class WorkspacesService {
-  create(createWorkspaceDto: CreateWorkspaceDto) {
-    return 'This action adds a new workspace';
-  }
+   constructor(
+      @InjectRepository(WorkspaceEntity)
+      private workspaceRepository: Repository<WorkspaceEntity>,
+      @InjectRepository(WorkspaceMemberEntity)
+      private memberRepository: Repository<WorkspaceMemberEntity>,
+   ) {}
 
-  findAll() {
-    return `This action returns all workspaces`;
-  }
+   async create(userId, dto: CreateWorkspaceDto) {
+      const workspace = await this.workspaceRepository.save({
+         name: dto.name,
+         slug: slugify(dto.name),
+         description: dto.description,
+         visibility: WorkspaceVisibility.PRIVATE,
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} workspace`;
-  }
+      await this.memberRepository.insert({
+         userId,
+         workspace,
+         role: WorkspaceMemberRole.ADMIN,
+      });
 
-  update(id: number, updateWorkspaceDto: UpdateWorkspaceDto) {
-    return `This action updates a #${id} workspace`;
-  }
+      return workspace;
+   }
 
-  remove(id: number) {
-    return `This action removes a #${id} workspace`;
-  }
+   async findOne(id: string) {
+      const workspace = await this.workspaceRepository.findOne({
+         where: { id },
+         relations: { members: { user: true } },
+      });
+
+      return workspace;
+   }
 }

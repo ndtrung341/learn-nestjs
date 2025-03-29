@@ -85,8 +85,9 @@ export class AuthService {
     * Validates user credentials.
     */
    async validateUser(email: string, password: string) {
+      console.log(123);
       const user = await this.usersService.findOneByEmail(email);
-      console.log(user);
+      console.log(456);
       return user && (await user.checkPassword(password)) ? user : null;
    }
 
@@ -165,11 +166,11 @@ export class AuthService {
       const [accessToken, refreshToken] = await Promise.all([
          this.jwtService.signAsync(accessPayload, {
             secret,
-            expiresIn,
+            expiresIn: expiresIn / 1000,
          }),
          this.jwtService.signAsync(refreshPayload, {
             secret: refreshSecret,
-            expiresIn: refreshExpiresIn,
+            expiresIn: refreshExpiresIn / 1000,
          }),
       ]);
 

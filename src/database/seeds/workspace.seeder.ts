@@ -19,7 +19,7 @@ export class WorkspaceSeeder extends BaseSeeder {
 
       // Insert workspaces
       const workspaceFactory = new WorkspaceFactory();
-      const workspaces = workspaceFactory.createMany(4);
+      const workspaces = workspaceFactory.createMany(3);
 
       const inserted = await workspaceRepo.insert(workspaces);
       const workspaceIds = inserted.identifiers.map((w) => w.id);

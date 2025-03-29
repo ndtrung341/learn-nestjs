@@ -1,12 +1,13 @@
 import { BaseEntity } from '@db/core/base.entity';
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { WorkspaceMemberEntity } from './workspace-member.entity';
 
 export enum WorkspaceVisibility {
    PUBLIC = 'public',
    PRIVATE = 'private',
 }
 
-@Entity('workspaces')
+@Entity()
 export class WorkspaceEntity extends BaseEntity {
    @PrimaryGeneratedColumn('uuid')
    id: string;
@@ -14,10 +15,9 @@ export class WorkspaceEntity extends BaseEntity {
    @Column()
    name: string;
 
-   @Column({ default: '' })
+   @Column({ nullable: true, default: '' })
    description?: string;
 
-   @Index()
    @Column({ unique: true })
    slug: string;
 
@@ -27,4 +27,7 @@ export class WorkspaceEntity extends BaseEntity {
       default: WorkspaceVisibility.PRIVATE,
    })
    visibility: WorkspaceVisibility;
+
+   @OneToMany(() => WorkspaceMemberEntity, (members) => members.workspace)
+   members: WorkspaceMemberEntity[];
 }

@@ -18,7 +18,7 @@ export class UserSeeder extends BaseSeeder {
       });
 
       const randomUsers = userFactory
-         .createMany(11, { password })
+         .createMany(5, { password })
          .map((data) => userRepo.create(data));
 
       await userRepo.insert([me, ...randomUsers]);

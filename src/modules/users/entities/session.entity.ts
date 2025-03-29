@@ -12,7 +12,7 @@ import { UserEntity } from './user.entity';
 import { BaseEntity } from '@db/core/base.entity';
 import crypto from 'crypto';
 
-@Entity('sessions')
+@Entity()
 export class SessionEntity extends BaseEntity {
    @PrimaryGeneratedColumn('uuid')
    id: string;
@@ -23,16 +23,14 @@ export class SessionEntity extends BaseEntity {
    @Column({ default: false })
    invalid: boolean;
 
-   @Column({ name: 'expires_in' })
+   @Column()
    expiresIn: number;
 
-   @Column({ type: 'uuid', name: 'user_id' })
+   @Column({ type: 'uuid' })
    userId!: string;
 
-   @ManyToOne(() => UserEntity, {
-      onDelete: 'CASCADE',
-   })
-   @JoinColumn({ name: 'user_id' })
+   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+   @JoinColumn()
    user!: Relation<UserEntity>;
 
    @BeforeInsert()

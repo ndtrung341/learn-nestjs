@@ -24,7 +24,7 @@
       "migration:run": "npm run typeorm migration:run",
       "migration:revert": "npm run typeorm migration:revert",
       "migration:show": "npm run typeorm migration:show",
-      "seed": "env-cmd ts-node src/database/seed.ts"
+      "seed": "env-cmd ts-node src/database/seeds/seed.ts"
    },
    "dependencies": {
       "@faker-js/faker": "^9.6.0",

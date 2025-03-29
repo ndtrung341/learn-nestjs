@@ -1,4 +1,5 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { NamingStrategy } from './naming.strategy';
 
 export const AppDataSource = new DataSource({
    type: process.env.DB_TYPE,
@@ -13,4 +14,5 @@ export const AppDataSource = new DataSource({
    migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
    migrationsRun: false,
    migrationsTableName: 'migrations',
+   namingStrategy: new NamingStrategy(),
 } as DataSourceOptions);

@@ -7,15 +7,15 @@ import {
    Entity,
    Index,
    PrimaryGeneratedColumn,
+   Unique,
 } from 'typeorm';
 import * as hashUtil from '@utils/bcrypt';
 
-@Entity('users')
+@Entity()
 export class UserEntity extends BaseEntity {
    @PrimaryGeneratedColumn('uuid')
    id: string;
 
-   @Index()
    @Column({ unique: true })
    email: string;
 
@@ -23,37 +23,37 @@ export class UserEntity extends BaseEntity {
    @Column()
    password: string;
 
-   @Column({ name: 'first_name' })
+   @Column()
    firstName: string;
 
-   @Column({ name: 'last_name' })
+   @Column()
    lastName: string;
 
-   @Column({ default: '' })
+   @Column({ nullable: true, default: '' })
    bio?: string;
 
-   @Column({ default: '' })
+   @Column({ nullable: true, default: '' })
    image?: string;
 
-   @Column({ name: 'email_verified', default: false })
+   @Column({ default: false })
    emailVerified: boolean;
 
    @Exclude()
-   @Index()
-   @Column({ name: 'verify_token', type: 'uuid', nullable: true })
+   @Index({ unique: true })
+   @Column({ type: 'uuid', nullable: true })
    verifyToken: string | null;
 
    @Exclude()
-   @Column({ name: 'verify_expires', type: 'timestamptz', nullable: true })
+   @Column({ type: 'timestamptz', nullable: true })
    verifyExpires: Date | null;
 
    @Exclude()
-   @Index()
-   @Column({ name: 'reset_token', type: 'uuid', nullable: true })
+   @Index({ unique: true })
+   @Column({ type: 'uuid', nullable: true })
    resetToken: string | null;
 
    @Exclude()
-   @Column({ name: 'reset_expires', type: 'timestamptz', nullable: true })
+   @Column({ type: 'timestamptz', nullable: true })
    resetExpires: Date | null;
 
    @BeforeInsert()
@@ -69,7 +69,6 @@ export class UserEntity extends BaseEntity {
    }
 
    constructor(data?: Partial<UserEntity>) {
-      super();
-      Object.assign(this, data);
+      super(data);
    }
 }
