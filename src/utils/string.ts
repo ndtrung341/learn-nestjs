@@ -1,8 +1,12 @@
-export const snakeToCamel = (str: string): string =>
-   str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+export const camelCase = (str: string) => {
+   return str
+      .replace(/^[A-Z]/, (match) => match.toLowerCase())
+      .replace(/[\s-_]+(\w)/g, (_, char) => char.toUpperCase());
+};
 
-export const camelToSnake = (str: string): string =>
-   str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+export const snakeCase = (str: string) => {
+   return str.replace(/(?!^)([A-Z])/g, '_$1').toLowerCase();
+};
 
 export function slugify(text: string): string {
    return text

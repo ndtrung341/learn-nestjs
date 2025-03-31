@@ -85,9 +85,7 @@ export class AuthService {
     * Validates user credentials.
     */
    async validateUser(email: string, password: string) {
-      console.log(123);
       const user = await this.usersService.findOneByEmail(email);
-      console.log(456);
       return user && (await user.checkPassword(password)) ? user : null;
    }
 

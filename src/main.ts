@@ -6,7 +6,11 @@ import { CustomValidationPipe } from '@common/pipes/custom-validation.pipe';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { CamelSnakeInterceptor } from '@common/interceptors/camel-snake.interceptor';
 import { StandardizeTrInterceptor } from '@common/interceptors/standardize.interceptor';
-import { ClassSerializerInterceptor } from '@nestjs/common';
+import {
+   ClassSerializerInterceptor,
+   UnprocessableEntityException,
+   ValidationPipe,
+} from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -25,8 +29,17 @@ async function bootstrap() {
       new StandardizeTrInterceptor(reflector),
       new ClassSerializerInterceptor(reflector),
    );
-   app.useGlobalPipes(new CustomValidationPipe());
-   app.useGlobalFilters(new GlobalExceptionFilter());
+   // app.useGlobalPipes(new CustomValidationPipe());
+   app.useGlobalPipes(
+      new ValidationPipe({
+         whitelist: true,
+         // transform: true,
+         exceptionFactory(errors) {
+            throw new UnprocessableEntityException(errors);
+         },
+      }),
+   );
+   app.useGlobalFilters(new GlobalExceptionFilter(config));
 
    await app.listen(config.get('app.port') ?? 3000);
 

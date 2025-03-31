@@ -5,9 +5,9 @@ import {
    HttpStatus,
    Injectable,
 } from '@nestjs/common';
-import { camelToSnake } from '@utils/string';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
+import { snakeCase } from 'typeorm/util/StringUtils';
 
 /**
  * Custom validation pipe that validates incoming data against DTO classes
@@ -51,7 +51,7 @@ export class CustomValidationPipe implements PipeTransform<any> {
       const formattedErrors: Record<string, string> = {};
 
       for (const error of errors) {
-         const property = camelToSnake(error.property);
+         const property = snakeCase(error.property);
          const path = parentPath ? `${parentPath}.${property}` : property;
 
          if (error.children?.length) {
@@ -75,7 +75,7 @@ export class CustomValidationPipe implements PipeTransform<any> {
     * Format error message to use snake_case property names
     */
    private formatErrorMessage(propertyName: string, message: string): string {
-      const snakeCaseProperty = camelToSnake(propertyName);
+      const snakeCaseProperty = snakeCase(propertyName);
 
       // Only replace the property name if it appears as a whole word
       return message.replace(

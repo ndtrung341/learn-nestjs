@@ -4,7 +4,7 @@ import {
    Injectable,
    NestInterceptor,
 } from '@nestjs/common';
-import { camelToSnake, snakeToCamel } from '@utils/string';
+import { camelCase, snakeCase } from '@utils/string';
 import { map } from 'rxjs';
 
 /**
@@ -19,13 +19,13 @@ export class CamelSnakeInterceptor implements NestInterceptor {
 
       // Transform request body from snake_case to camelCase
       if (request.body) {
-         request.body = this.transformKeys(request.body, snakeToCamel);
+         request.body = this.transformKeys(request.body, camelCase);
       }
 
       // Transform response from camelCase to snake_case
       return next
          .handle()
-         .pipe(map((data) => this.transformKeys(data, camelToSnake)));
+         .pipe(map((data) => this.transformKeys(data, snakeCase)));
    }
 
    private transformKeys(data: any, transformer: (str: string) => string) {

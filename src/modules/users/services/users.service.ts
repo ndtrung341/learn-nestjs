@@ -37,7 +37,7 @@ export class UsersService {
       if (existingUser) {
          throw new EmailAlreadyExistsException();
       }
-      console.log(this.configService.get('auth.verifyExpiresIn'));
+
       const verifyToken = uuidv4();
       const verifyExpires = dayjs()
          .add(this.configService.get('auth.verifyExpiresIn'))
