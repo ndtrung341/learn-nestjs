@@ -13,6 +13,7 @@ import { STATUS_CODES } from 'http';
 import { CONSTRAINT_ERRORS } from '@constants/constraint-errors.constant';
 import { snakeCase } from '@utils/string';
 import { ConfigService } from '@nestjs/config';
+import { Environment } from '@constants/app.constants';
 
 type ErrorResponse = {
    status: number; // HTTP status code
@@ -30,7 +31,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    private isDebug = false;
 
    constructor(private configService: ConfigService) {
-      this.isDebug = configService.get('app.environment') === 'development';
+      this.isDebug =
+         configService.get('app.environment') === Environment.DEVELOPMENT;
    }
 
    catch(exception: any, host: ArgumentsHost) {

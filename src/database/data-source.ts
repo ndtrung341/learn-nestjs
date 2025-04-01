@@ -1,5 +1,9 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { NamingStrategy } from './naming.strategy';
+import { config } from 'dotenv';
+
+// Load environment variables
+config();
 
 export const AppDataSource = new DataSource({
    type: process.env.DB_TYPE,
@@ -16,3 +20,12 @@ export const AppDataSource = new DataSource({
    migrationsTableName: 'migrations',
    namingStrategy: new NamingStrategy(),
 } as DataSourceOptions);
+
+let dataSource: DataSource;
+
+export async function getDataSource() {
+   if (!dataSource) {
+      dataSource = await AppDataSource.initialize();
+   }
+   return dataSource;
+}
