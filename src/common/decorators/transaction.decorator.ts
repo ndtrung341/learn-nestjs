@@ -1,8 +1,13 @@
-import { getDataSource } from '@db/data-source';
-import { Repository, EntityManager } from 'typeorm';
+import { getDataSource } from '@utils/data-source';
+import { Repository, EntityManager, DataSource } from 'typeorm';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
-export function Transaction(isolationLevel?: IsolationLevel) {
+type TransactionOptions = {
+   name?: string;
+   isolation?: IsolationLevel;
+};
+
+export function Transaction(options: TransactionOptions = {}) {
    return function (
       target: any,
       propertyKey: string,
@@ -11,44 +16,36 @@ export function Transaction(isolationLevel?: IsolationLevel) {
       const originalMethod = descriptor.value;
 
       descriptor.value = async function (...args: any[]) {
-         const dataSource = await getDataSource();
-         if (!dataSource) {
-            throw new Error('DataSource not initialized');
-         }
+         const dataSource = getDataSource(options?.name);
 
-         // Create transaction callback with entity manager
-         const transactionCallback = async (entityManager: EntityManager) => {
-            // Create new repository instances bound to the transaction
-            const repositoryInstances = Object.keys(this)
-               .filter((key) => this[key] instanceof Repository)
-               .reduce((acc, key) => {
-                  const repository = this[key];
-                  const entityType = repository.target;
-                  acc[key] = entityManager.getRepository(entityType);
-                  return acc;
-               }, {});
-
-            // Create proxy to intercept repository calls
+         const transactionCallback = async (manager: EntityManager) => {
             const proxy = new Proxy(this, {
                get(target, property) {
-                  // If property is a repository, return transaction-bound version
-                  if (repositoryInstances[property]) {
-                     return repositoryInstances[property];
+                  const value = target[property];
+
+                  if (value instanceof Repository) {
+                     return manager.getRepository(value.target);
+                  } else if (value instanceof DataSource) {
+                     return {
+                        ...value,
+                        manager,
+                        query: manager.query.bind(manager),
+                        createQueryBuilder:
+                           manager.createQueryBuilder.bind(manager),
+                     };
                   }
-                  return target[property];
+
+                  return value;
                },
             });
 
-            // Call original method with proxy context and entity manager
-            return originalMethod.apply(proxy, [...args, entityManager]);
+            return originalMethod.apply(proxy, args);
          };
 
-         // Execute transaction with or without isolation level
-         if (isolationLevel) {
-            return dataSource.transaction(isolationLevel, transactionCallback);
-         } else {
-            return dataSource.transaction(transactionCallback);
-         }
+         // Execute transaction with specified isolation level if provided
+         return options?.isolation
+            ? dataSource.transaction(options.isolation, transactionCallback)
+            : dataSource.transaction(transactionCallback);
       };
 
       return descriptor;

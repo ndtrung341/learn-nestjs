@@ -1,4 +1,4 @@
-import { getDataSource } from '../data-source';
+import { AppDataSource } from '../data-source';
 import { UserSeeder } from './user.seeder';
 import { WorkspaceSeeder } from './workspace.seeder';
 
@@ -17,7 +17,7 @@ const runSeed = async () => {
    );
    console.log('='.repeat(50) + '\n');
 
-   const dataSource = await getDataSource();
+   const dataSource = await AppDataSource.initialize();
    const startTime = Date.now();
 
    try {

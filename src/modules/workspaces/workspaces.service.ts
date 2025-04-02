@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
    WorkspaceEntity,
@@ -16,6 +16,7 @@ import { Transaction } from '@common/decorators/transaction.decorator';
 @Injectable()
 export class WorkspacesService {
    constructor(
+      private dataSource: DataSource,
       @InjectRepository(WorkspaceEntity)
       private workspaceRepository: Repository<WorkspaceEntity>,
       @InjectRepository(WorkspaceMemberEntity)
@@ -35,7 +36,7 @@ export class WorkspacesService {
 
       await this.workspaceMemberRepository.insert({
          userId,
-         workspace: newWorkspace,
+         workspace: newWorkspace as any,
          role: WorkspaceMemberRole.ADMIN,
       });
 
@@ -52,25 +53,17 @@ export class WorkspacesService {
    private async generateUniqueSlug(workspaceName: string) {
       const baseSlug = slugify(workspaceName);
 
-      const existingSlugNumbersQuery = this.workspaceRepository
-         .createQueryBuilder()
-         .select(
-            `CAST(COALESCE(NULLIF(SUBSTRING(slug, LENGTH(:baseSlug) + 1),''),'0') AS INTEGER)`,
-            'number',
-         )
-         .where(`slug LIKE :pattern`)
-         .setParameters({
-            baseSlug,
-            pattern: `${baseSlug}%`,
-         })
-         .orderBy('number');
-
-      const { nextAvailableNumber } = await this.workspaceRepository
+      const { nextAvailableNumber } = await this.dataSource
          .createQueryBuilder()
          .addCommonTableExpression(
-            existingSlugNumbersQuery,
+            `SELECT
+               CAST(COALESCE(NULLIF(SUBSTRING(slug, LENGTH(:baseSlug) + 1),''),'0') AS INTEGER) AS number
+            FROM workspace
+            WHERE slug LIKE :baseSlug || '%'
+            ORDER BY number`,
             'existing_slug_numbers',
          )
+         .setParameters({ baseSlug })
          .select('COALESCE(MIN(current.number), -1) + 1', 'nextAvailableNumber')
          .from('existing_slug_numbers', 'current')
          .leftJoin(
