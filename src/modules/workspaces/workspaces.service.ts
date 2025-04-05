@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Like, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
    WorkspaceEntity,
@@ -10,84 +10,54 @@ import {
    WorkspaceMemberEntity,
    WorkspaceMemberRole,
 } from './entities/workspace-member.entity';
-import { slugify } from '@utils/string';
 import { Transaction } from '@common/decorators/transaction.decorator';
+import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 
 @Injectable()
 export class WorkspacesService {
    constructor(
-      private dataSource: DataSource,
+      private readonly dataSource: DataSource,
       @InjectRepository(WorkspaceEntity)
-      private workspaceRepository: Repository<WorkspaceEntity>,
+      private readonly workspaceRepo: Repository<WorkspaceEntity>,
       @InjectRepository(WorkspaceMemberEntity)
-      private workspaceMemberRepository: Repository<WorkspaceMemberEntity>,
+      private readonly memberRepo: Repository<WorkspaceMemberEntity>,
    ) {}
 
-   @Transaction()
-   async create(userId: string, createWorkspaceDto: CreateWorkspaceDto) {
-      const uniqueSlug = await this.generateUniqueSlug(createWorkspaceDto.name);
+   async findWorkspaceById(id: string) {
+      return this.workspaceRepo.findOne({
+         where: { id },
+         relations: {
+            members: {
+               user: true,
+            },
+         },
+      });
+   }
 
-      const newWorkspace = await this.workspaceRepository.save({
-         name: createWorkspaceDto.name,
-         slug: uniqueSlug,
-         description: createWorkspaceDto.description,
+   @Transaction()
+   async createWorkspace(ownerId: string, dto: CreateWorkspaceDto) {
+      const workspace = await this.workspaceRepo.save({
+         name: dto.name,
+         description: dto.description,
          visibility: WorkspaceVisibility.PRIVATE,
       });
 
-      await this.workspaceMemberRepository.insert({
-         userId,
-         workspace: newWorkspace as any,
+      await this.memberRepo.insert({
+         userId: ownerId,
+         workspace,
          role: WorkspaceMemberRole.ADMIN,
       });
 
-      return newWorkspace;
+      return workspace;
    }
 
-   async findOne(workspaceId: string) {
-      return this.workspaceRepository.findOne({
-         where: { id: workspaceId },
-         relations: { members: { user: true } },
-      });
-   }
+   async updateWorkspace(id: string, dto: UpdateWorkspaceDto) {
+      const workspace = await this.workspaceRepo.findOneBy({ id });
 
-   private async generateUniqueSlug(workspaceName: string) {
-      const baseSlug = slugify(workspaceName);
+      if (!workspace) {
+         throw new NotFoundException('Workspace not found');
+      }
 
-      const { nextAvailableNumber } = await this.dataSource
-         .createQueryBuilder()
-         .addCommonTableExpression(
-            `SELECT
-               CAST(COALESCE(NULLIF(SUBSTRING(slug, LENGTH(:baseSlug) + 1),''),'0') AS INTEGER) AS number
-            FROM workspace
-            WHERE slug LIKE :baseSlug || '%'
-            ORDER BY number`,
-            'existing_slug_numbers',
-         )
-         .setParameters({ baseSlug })
-         .select('COALESCE(MIN(current.number), -1) + 1', 'nextAvailableNumber')
-         .from('existing_slug_numbers', 'current')
-         .leftJoin(
-            'existing_slug_numbers',
-            'next',
-            'next.number = current.number + 1',
-         )
-         .where('next.number IS NULL')
-         .getRawOne();
-
-      return nextAvailableNumber
-         ? `${baseSlug}${nextAvailableNumber}`
-         : baseSlug;
+      return this.workspaceRepo.save({ ...workspace, ...dto });
    }
 }
-
-// WITH slug_nums AS (
-// 	SELECT
-// 		CAST(COALESCE(NULLIF(SUBSTRING(slug, LENGTH('this-is-slug') + 1),''),'0') AS INTEGER) AS num
-// 	FROM workspace
-// 	WHERE slug LIKE 'this-is-slug' || '%'
-// 	ORDER BY num
-// )
-// SELECT COALESCE(MIN(curr.num), 0) + 1 FROM slug_nums AS curr
-// LEFT JOIN slug_nums AS next
-// ON  next.num = curr.num + 1
-// WHERE next.num IS NULL

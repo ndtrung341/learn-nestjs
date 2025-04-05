@@ -7,7 +7,6 @@ import {
    Entity,
    Index,
    PrimaryGeneratedColumn,
-   Unique,
 } from 'typeorm';
 import * as hashUtil from '@utils/bcrypt';
 
