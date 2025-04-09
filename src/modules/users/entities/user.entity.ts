@@ -63,6 +63,10 @@ export class UserEntity extends BaseEntity {
       }
    }
 
+   get fullName() {
+      return `${this.lastName} ${this.firstName}`;
+   }
+
    async checkPassword(password: string): Promise<boolean> {
       return await hashUtil.verify(password, this.password);
    }

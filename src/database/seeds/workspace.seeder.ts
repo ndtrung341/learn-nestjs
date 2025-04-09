@@ -21,7 +21,9 @@ export class WorkspaceSeeder extends BaseSeeder {
       const workspaceFactory = new WorkspaceFactory();
       const workspaces = workspaceFactory.createMany(3);
 
-      const inserted = await workspaceRepo.insert(workspaces);
+      const inserted = await workspaceRepo.insert(
+         workspaces.map((w) => ({ ...w, owner: adminUser })),
+      );
       const workspaceIds = inserted.identifiers.map((w) => w.id);
 
       // Create members for each workspace
@@ -31,13 +33,15 @@ export class WorkspaceSeeder extends BaseSeeder {
             userId: adminUser.id,
             workspaceId: workspaceId,
             role: WorkspaceMemberRole.ADMIN,
+            joinedAt: new Date(),
          };
 
-         // Random normal members
+         // Random members
          const normalMembers = getRandomUsers(users.slice(1)).map((user) => ({
             userId: user.id,
             workspaceId: workspaceId,
-            role: WorkspaceMemberRole.NORMAL,
+            role: WorkspaceMemberRole.MEMBER,
+            invitedBy: adminUser,
          }));
 
          return [adminMember, ...normalMembers];

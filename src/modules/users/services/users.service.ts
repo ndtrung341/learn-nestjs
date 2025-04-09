@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { UserEntity } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -26,7 +26,7 @@ export class UsersService {
    constructor(
       private configService: ConfigService,
       @InjectRepository(UserEntity)
-      private userRepository: Repository<UserEntity>,
+      private userRepo: Repository<UserEntity>,
    ) {}
 
    /**
@@ -43,29 +43,35 @@ export class UsersService {
          .add(this.configService.get('auth.verifyExpiresIn'))
          .toDate();
 
-      const newUser = this.userRepository.create({
+      const newUser = this.userRepo.create({
          ...dto,
          verifyToken,
          verifyExpires,
       });
 
-      return this.userRepository.save(newUser);
+      return this.userRepo.save(newUser);
    }
 
    /**
     * Update user details.
     */
    async updateUser(id: string, dto: UpdateUserDto) {
-      const user = await this.userRepository.findOneBy({ id });
-      return await this.userRepository.save({ ...user, ...dto });
+      const user = await this.userRepo.findOneBy({ id });
+      return await this.userRepo.save({ ...user, ...dto });
    }
 
    /**
     * Find a user by email.
     */
    async findOneByEmail(email: string) {
-      return this.userRepository.findOne({
+      return this.userRepo.findOne({
          where: { email },
+      });
+   }
+
+   async findByEmails(emails: string[]) {
+      return this.userRepo.find({
+         where: { email: In(emails) },
       });
    }
 
@@ -73,14 +79,14 @@ export class UsersService {
     * Find a user by ID.
     */
    async findOneById(id: string) {
-      return this.userRepository.findOneBy({ id });
+      return this.userRepo.findOneByOrFail({ id });
    }
 
    /**
     * Verify a user's email using a token.
     */
    async verifyEmailToken(token: string) {
-      const user = await this.userRepository.findOneBy({ verifyToken: token });
+      const user = await this.userRepo.findOneBy({ verifyToken: token });
 
       if (!user || dayjs().isAfter(user.verifyExpires)) {
          throw new InvalidVerificationTokenException();
@@ -90,7 +96,7 @@ export class UsersService {
          throw new EmailAlreadyVerifiedException();
       }
 
-      return this.userRepository.update(user.id, {
+      return this.userRepo.update(user.id, {
          verifyToken: null,
          verifyExpires: null,
          emailVerified: true,
@@ -106,7 +112,7 @@ export class UsersService {
          .add(this.configService.get('auth.resetPasswordExpiresIn'))
          .toDate();
 
-      const { affected } = await this.userRepository.update(
+      const { affected } = await this.userRepo.update(
          { email },
          { resetToken, resetExpires },
       );
@@ -122,7 +128,7 @@ export class UsersService {
     * Reset the user's password using reset token.
     */
    async resetPassword(token: string, newPassword: string) {
-      const user = await this.userRepository.findOneBy({ resetToken: token });
+      const user = await this.userRepo.findOneBy({ resetToken: token });
 
       if (!user || dayjs().isAfter(user.resetExpires)) {
          throw new InvalidResetPasswordTokenException();
@@ -132,6 +138,6 @@ export class UsersService {
       user.resetToken = null;
       user.resetExpires = null;
 
-      await this.userRepository.save(user);
+      await this.userRepo.save(user);
    }
 }

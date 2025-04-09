@@ -49,6 +49,6 @@ export class NamingStrategy extends DefaultNamingStrategy {
    }
 
    joinColumnName(relationName: string, referencedColumnName: string): string {
-      return `${relationName}_${referencedColumnName}`;
+      return snakeCase(`${relationName}_${referencedColumnName}`);
    }
 }

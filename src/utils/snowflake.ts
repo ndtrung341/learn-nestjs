@@ -56,7 +56,7 @@ export class Snowflake {
          epoch = new Date('2024-01-01T00:00:00Z').getTime(),
          machineBits = 10,
          sequenceBits = 12,
-         machineId = 1,
+         machineId = 0,
       } = options;
 
       this.epoch = epoch;

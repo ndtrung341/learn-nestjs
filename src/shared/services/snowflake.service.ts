@@ -8,9 +8,7 @@ export class SnowflakeService {
    constructor() {
       this._sf = new Snowflake({
          epoch: new Date('2025-01-01T00:00:00Z').getTime(),
-         machineBits: 4,
-         sequenceBits: 10,
-         machineId: 1,
+         machineBits: 2,
       });
    }
 

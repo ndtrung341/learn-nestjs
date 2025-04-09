@@ -48,11 +48,11 @@ export class AuthController {
       return this.authService.register(registerDto);
    }
 
-   @Get('verify')
+   @Post('verify')
    @ApiPublic({
       message: 'Email verified successfully',
    })
-   async verifyEmail(@Query('token') token: string) {
+   async verifyEmail(@Body('token') token: string) {
       return this.authService.verifyEmail(token);
    }
 

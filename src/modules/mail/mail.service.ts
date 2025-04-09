@@ -6,28 +6,27 @@ import { ConfigService } from '@nestjs/config';
 enum EmailTemplate {
    VERIFICATION = 'email-verification',
    PASSWORD_RESET = 'reset-password',
+   INVITATION = 'workspace-invitation',
 }
 
 @Injectable()
 export class MailService {
-   private readonly apiUrl: string;
    private readonly clientUrl: string;
 
    constructor(
       private readonly config: ConfigService,
       private readonly mailer: MailerService,
    ) {
-      const { url, prefix, clientUrl } = this.config.get('app');
-      this.apiUrl = `${url}/${prefix}`;
+      const { clientUrl } = this.config.get('app');
       this.clientUrl = clientUrl;
    }
 
    async sendVerificationEmail(email: string, token: string) {
-      const url = `${this.apiUrl}/auth/verify?token=${token}`;
+      const url = `${this.clientUrl}/verification?token=${token}`;
 
       return this.sendEmail(
          email,
-         'Email Verification - MyApp',
+         '[MyApp] Email Verification',
          EmailTemplate.VERIFICATION,
          { url },
       );
@@ -38,9 +37,27 @@ export class MailService {
 
       return this.sendEmail(
          email,
-         'Reset Your Password – MyApp',
+         '[MyApp] Reset Your Password',
          EmailTemplate.PASSWORD_RESET,
          { url },
+      );
+   }
+
+   async sendWorkspaceInvitation(options: {
+      email: string;
+      senderEmail: string;
+      senderName: string;
+      workspaceName: string;
+      token: string;
+   }) {
+      const { senderName, senderEmail, email, token, workspaceName } = options;
+      const url = `${this.clientUrl}/invitation?token=${token}`;
+
+      return this.sendEmail(
+         email,
+         `[MyApp] ${senderName} has invited you to join ${workspaceName} workspace`,
+         EmailTemplate.INVITATION,
+         { url, senderEmail, senderName, workspaceName },
       );
    }
 

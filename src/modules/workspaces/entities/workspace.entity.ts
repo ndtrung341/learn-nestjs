@@ -1,6 +1,15 @@
 import { BaseEntity } from '@db/core/base.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+   Column,
+   Entity,
+   JoinColumn,
+   ManyToOne,
+   OneToMany,
+   PrimaryGeneratedColumn,
+   Relation,
+} from 'typeorm';
 import { WorkspaceMemberEntity } from './workspace-member.entity';
+import { UserEntity } from '@modules/users/entities/user.entity';
 
 export enum WorkspaceVisibility {
    PUBLIC = 'public',
@@ -18,8 +27,8 @@ export class WorkspaceEntity extends BaseEntity {
    @Column({ nullable: true, default: '' })
    description?: string;
 
-   @Column({ unique: true })
-   slug: string;
+   @Column()
+   ownerId: string;
 
    @Column({
       type: 'enum',
@@ -30,4 +39,8 @@ export class WorkspaceEntity extends BaseEntity {
 
    @OneToMany(() => WorkspaceMemberEntity, (members) => members.workspace)
    members: WorkspaceMemberEntity[];
+
+   @ManyToOne(() => UserEntity)
+   @JoinColumn()
+   owner: Relation<UserEntity>;
 }

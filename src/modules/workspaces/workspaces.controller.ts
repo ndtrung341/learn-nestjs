@@ -5,58 +5,119 @@ import {
    Param,
    Get,
    Put,
-   HttpStatus,
+   Delete,
+   UseGuards,
+   Req,
+   Patch,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
-import { ApiPrivate } from '@common/decorators/http.decorators';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { WorkspaceVisibility } from './entities/workspace.entity';
-import { SnowflakeService } from '@shared/services/snowflake.service';
+import {
+   CancelInvitationDto,
+   InvitationDto,
+   ResendInvitationDto,
+} from './dto/invitation.dto';
+import { InvitationGuard } from './guards/invitation.guard';
+import { InvitationTokenPayload } from './types/invitation-payload';
+import { WorkspacePermission } from '@common/decorators/workspace-permission.decorator';
+import { WorkspaceMemberRole } from './entities/workspace-member.entity';
+import { WorkspacePermissionGuard } from './guards/workspace-permission.guard';
 
 @Controller('workspaces')
 export class WorkspacesController {
-   constructor(
-      private readonly workspacesService: WorkspacesService,
-      private sf: SnowflakeService,
-   ) {}
+   constructor(private readonly workspacesService: WorkspacesService) {}
 
-   @Get('test')
-   test() {
-      return Array.from({ length: 1000 }).map(() =>
-         this.sf.generate().toString(),
-      );
+   // --- Workspace CRUD ---
+   @Get()
+   async getUserWorkspaces(@CurrentUser('id') userId: string) {
+      return this.workspacesService.getWorkspacesByUserId(userId);
    }
 
    @Get(':id')
-   get(@Param('id') id) {
-      return this.workspacesService.findWorkspaceById(id);
+   getWorkspaceById(@Param('id') id: string) {
+      return this.workspacesService.getWorkspaceById(id);
    }
 
    @Post()
-   @ApiPrivate({
-      statusCode: HttpStatus.CREATED,
-      message: 'Workspace created successfully',
-   })
-   create(
-      @CurrentUser('sub') userId,
+   createWorkspace(
+      @CurrentUser('sub') ownerId: string,
       @Body() createWorkspaceDto: CreateWorkspaceDto,
    ) {
-      return this.workspacesService.createWorkspace(userId, createWorkspaceDto);
+      return this.workspacesService.createWorkspace(
+         ownerId,
+         createWorkspaceDto,
+      );
    }
 
    @Put(':id')
-   @ApiPrivate({
-      message: 'Workspace update successfully',
-   })
-   update(
+   @UseGuards(WorkspacePermissionGuard)
+   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   updateWorkspace(
       @Param('id') workspaceId: string,
       @Body() updateWorkspaceDto: UpdateWorkspaceDto,
    ) {
       return this.workspacesService.updateWorkspace(
          workspaceId,
          updateWorkspaceDto,
+      );
+   }
+
+   @Delete(':id')
+   deleteWorkspace(@Param('id') workspaceId: string) {
+      return this.workspacesService.deleteWorkspace(workspaceId);
+   }
+
+   // --- Invitations ---
+   @Post(':id/members')
+   @UseGuards(WorkspacePermissionGuard)
+   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   inviteMembers(
+      @CurrentUser('sub') currentUserId: string,
+      @Param('id') workspaceId: string,
+      @Body() dto: InvitationDto,
+   ) {
+      return this.workspacesService.inviteUsers(
+         currentUserId,
+         workspaceId,
+         dto.emails,
+         dto.role,
+      );
+   }
+
+   @Post('invitations/resend')
+   @UseGuards(WorkspacePermissionGuard)
+   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   resendInvite(
+      @CurrentUser('sub') currentUserId: string,
+      @Body() dto: ResendInvitationDto,
+   ) {
+      return this.workspacesService.resendInvitation(
+         currentUserId,
+         dto.userId,
+         dto.workspaceId,
+      );
+   }
+
+   @Post('invitations/cancel')
+   @UseGuards(WorkspacePermissionGuard)
+   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   cancelInvite(@Body() dto: CancelInvitationDto) {
+      return this.workspacesService.cancelInvitation(
+         dto.userId,
+         dto.workspaceId,
+      );
+   }
+
+   @Patch('invitations/respond')
+   @UseGuards(InvitationGuard)
+   respondInvitation(@Req() request, @Body('accept') isAccepted: boolean) {
+      const payload: InvitationTokenPayload = request.invitation;
+      return this.workspacesService.respondInvitation(
+         payload.userId,
+         payload.workspaceId,
+         isAccepted,
       );
    }
 }

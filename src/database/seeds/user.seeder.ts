@@ -13,8 +13,8 @@ export class UserSeeder extends BaseSeeder {
          email: 'duytrung341@gmail.com',
          password,
          emailVerified: true,
-         firstName: 'Super',
-         lastName: 'Admin',
+         firstName: 'Trung',
+         lastName: 'Nguyễn',
       });
 
       const randomUsers = userFactory

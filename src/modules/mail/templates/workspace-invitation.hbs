@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Workspace Invitation</title>
+      <style>
+         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+         }
+
+         table {
+            width: 100%;
+            border-collapse: separate;
+         }
+
+         a {
+            text-decoration: none;
+            color: inherit;
+         }
+
+         h1 {
+            font-size: 22px;
+         }
+
+         .header {
+            margin: 16px 0;
+         }
+
+         .main {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 0 16px;
+         }
+
+         .footer {
+            margin: 16px 0;
+            font-size: 14px;
+            color: #999;
+         }
+
+         .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+         }
+
+         .btn-primary {
+            background-color: #5f6ac4;
+            color: white;
+         }
+      </style>
+   </head>
+   <body>
+      <table>
+         <tr>
+            <td>
+               <!-- HEADER -->
+               <table class="header">
+                  <tr>
+                     <td align="center">
+                        <a href="http://nestjs.com/" target="blank">
+                           <img
+                              width="70"
+                              src="https://i.imgur.com/FtDhOTR.png"
+                           />
+                        </a>
+                     </td>
+                  </tr>
+               </table>
+               <!-- HEADER -->
+
+               <!-- MAIN -->
+               <table class="main">
+                  <tr>
+                     <td>
+                        <p>
+                           <strong>{{senderName}}</strong>
+                           (<a href="mailto:{{senderEmail}}" target="_blank">
+                              {{senderEmail}} </a
+                           >) has invited you to join
+                           <strong>{{workspaceName}}</strong>
+                           workspace
+                        </p>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td align="center">
+                        <a href="{{url}}" class="btn btn-primary">
+                           Join <strong>{{workspaceName}}</strong>
+                        </a>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td align="center">
+                        <img src="https://i.imgur.com/rWQTgl6.png" />
+                     </td>
+                  </tr>
+               </table>
+               <!-- MAIN -->
+
+               <table class="footer">
+                  <tr>
+                     <td align="center">© 2025 Learn Nestjs</td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+   </body>
+</html>
