@@ -1,4 +1,4 @@
-import { RESPONSE_MESSAGE_KEY } from '@common/decorators/response-message.decorator';
+import { RESPONSE_MESSAGE_KEY } from '@decorators/response-message.decorator';
 import {
    CallHandler,
    ExecutionContext,

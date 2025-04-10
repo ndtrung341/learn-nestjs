@@ -16,7 +16,7 @@ export function setDataSource(options: DataSource | DataSourceOptions) {
    }
 
    dataSources.set(name, dataSource);
-   return dataSource;
+   return dataSource.initialize();
 }
 
 export function getDataSource(name: string = 'default') {

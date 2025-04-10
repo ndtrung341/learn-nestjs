@@ -28,7 +28,12 @@
          "@config/*": ["config/*"],
          "@constants/*": ["constants/*"],
          "@shared/*": ["shared/*"],
-         "@db/*": ["database/*"]
+         "@db/*": ["database/*"],
+         "@decorators/*": ["decorators/*"],
+         "@pipes/*": ["pipes/*"],
+         "@interceptors/*": ["interceptors/*"],
+         "@exceptions/*": ["exceptions/*"],
+         "@filters/*": ["filters/*"]
       }
    }
 }

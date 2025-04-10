@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { WorkspacesService } from '../workspaces.service';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
-import { WORKSPACE_PERMISSION_KEY } from '@common/decorators/workspace-permission.decorator';
+import { WORKSPACE_PERMISSION_KEY } from '@decorators/workspace-permission.decorator';
 
 @Injectable()
 export class WorkspacePermissionGuard implements CanActivate {

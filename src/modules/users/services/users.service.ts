@@ -9,16 +9,16 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import {
    EmailAlreadyExistsException,
    EmailAlreadyVerifiedException,
-} from '@common/exceptions/auth.exception';
+} from '@exceptions/auth.exception';
 
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 
-import { UserNotFoundException } from '@common/exceptions/user.exception';
+import { UserNotFoundException } from '@exceptions/user.exception';
 import {
    InvalidResetPasswordTokenException,
    InvalidVerificationTokenException,
-} from '@common/exceptions/token.exception';
+} from '@exceptions/token.exception';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

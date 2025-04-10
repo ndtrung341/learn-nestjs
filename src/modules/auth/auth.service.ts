@@ -13,7 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import {
    EmailNotVerifiedException,
    InvalidCredentialsException,
-} from '@common/exceptions/auth.exception';
+} from '@exceptions/auth.exception';
 
 @Injectable()
 export class AuthService {

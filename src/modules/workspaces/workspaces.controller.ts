@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { CurrentUser } from '@decorators/current-user.decorator';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import {
    CancelInvitationDto,
@@ -21,7 +21,7 @@ import {
 } from './dto/invitation.dto';
 import { InvitationGuard } from './guards/invitation.guard';
 import { InvitationTokenPayload } from './types/invitation-payload';
-import { WorkspacePermission } from '@common/decorators/workspace-permission.decorator';
+import { WorkspacePermission } from '@decorators/workspace-permission.decorator';
 import { WorkspaceMemberRole } from './entities/workspace-member.entity';
 import { WorkspacePermissionGuard } from './guards/workspace-permission.guard';
 

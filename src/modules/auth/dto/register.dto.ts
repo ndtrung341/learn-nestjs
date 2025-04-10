@@ -1,4 +1,4 @@
-import { FieldMatch } from '@common/decorators/validators/field-match.decorator';
+import { FieldMatch } from '@decorators/validators/field-match.decorator';
 import {
    IsEmail,
    IsNotEmpty,

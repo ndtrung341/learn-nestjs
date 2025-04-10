@@ -10,7 +10,7 @@ import {
    SessionBlacklistedException,
    SessionInvalidException,
    SessionNotFoundException,
-} from '@common/exceptions/auth.exception';
+} from '@exceptions/auth.exception';
 
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';

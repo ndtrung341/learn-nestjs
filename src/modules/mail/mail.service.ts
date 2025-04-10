@@ -1,4 +1,4 @@
-import { MailSendFailedException } from '@common/exceptions/mail.exception';
+import { MailSendFailedException } from '@exceptions/mail.exception';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

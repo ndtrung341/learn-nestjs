@@ -1,4 +1,4 @@
-import { BaseEntity } from '@db/core/base.entity';
+import { BaseEntity } from '@common/entities/base.entity';
 import { Exclude } from 'class-transformer';
 import {
    BeforeInsert,

@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { UsersService } from './services/users.service';
-import { ApiPrivate } from '@common/decorators/http.decorators';
+import { ApiPrivate } from '@decorators/http.decorators';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('users')

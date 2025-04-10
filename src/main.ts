@@ -1,11 +1,10 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
-import { CustomValidationPipe } from '@common/pipes/custom-validation.pipe';
+import { GlobalExceptionFilter } from '@filters/global-exception.filter';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
-import { CamelSnakeInterceptor } from '@common/interceptors/camel-snake.interceptor';
-import { StandardizeTrInterceptor } from '@common/interceptors/standardize.interceptor';
+import { CamelSnakeInterceptor } from '@interceptors/camel-snake.interceptor';
+import { StandardizeTrInterceptor } from '@interceptors/standardize.interceptor';
 import {
    ClassSerializerInterceptor,
    UnprocessableEntityException,
@@ -29,11 +28,10 @@ async function bootstrap() {
       new StandardizeTrInterceptor(reflector),
       new ClassSerializerInterceptor(reflector),
    );
-   // app.useGlobalPipes(new CustomValidationPipe());
    app.useGlobalPipes(
       new ValidationPipe({
          whitelist: true,
-         // transform: true,
+         transform: true,
          exceptionFactory(errors) {
             throw new UnprocessableEntityException(errors);
          },

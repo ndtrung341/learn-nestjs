@@ -9,7 +9,7 @@ import {
    Unique,
 } from 'typeorm';
 import { WorkspaceEntity } from './workspace.entity';
-import { BaseEntity } from '@db/core/base.entity';
+import { BaseEntity } from '@common/entities/base.entity';
 
 export enum WorkspaceMemberRole {
    ADMIN = 'admin',

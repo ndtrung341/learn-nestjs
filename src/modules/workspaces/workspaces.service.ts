@@ -15,7 +15,7 @@ import {
 import { UsersService } from '@modules/users/services/users.service';
 import { MailService } from '@modules/mail/mail.service';
 import { UserEntity } from '@modules/users/entities/user.entity';
-import { Transaction } from '@common/decorators/transaction.decorator';
+import { Transaction } from '@decorators/transaction.decorator';
 
 @Injectable()
 export class WorkspacesService {

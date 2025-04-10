@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { CurrentUser } from '@common/decorators/current-user.decorator';
-import { ApiPrivate, ApiPublic } from '@common/decorators/http.decorators';
+import { CurrentUser } from '@decorators/current-user.decorator';
+import { ApiPrivate, ApiPublic } from '@decorators/http.decorators';
 
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 

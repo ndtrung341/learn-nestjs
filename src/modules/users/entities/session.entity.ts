@@ -9,7 +9,7 @@ import {
    Relation,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { BaseEntity } from '@db/core/base.entity';
+import { BaseEntity } from '@common/entities/base.entity';
 import crypto from 'crypto';
 
 @Entity()

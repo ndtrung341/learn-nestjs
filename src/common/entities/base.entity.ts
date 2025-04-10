@@ -7,7 +7,7 @@ export abstract class BaseEntity {
    @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
    updatedAt: Date;
 
-   constructor(data: Partial<BaseEntity>) {
+   constructor(data?: Partial<BaseEntity>) {
       Object.assign(this, data);
    }
 }
