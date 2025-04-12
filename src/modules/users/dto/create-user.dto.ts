@@ -1,3 +1,4 @@
+import { Optional } from '@nestjs/common';
 import {
    IsEmail,
    IsNotEmpty,
@@ -32,6 +33,9 @@ export class CreateUserDto {
       minSymbols: 1,
    })
    password: string;
+
+   @Optional()
+   emailVerified?: boolean;
 
    @IsString()
    @IsOptional()

@@ -22,7 +22,7 @@ async function bootstrap() {
 
    app.setGlobalPrefix(config.get('app.prefix'));
 
-   app.useGlobalGuards(new AuthGuard(reflector));
+   // app.useGlobalGuards(new AuthGuard(reflector));
    app.useGlobalInterceptors(
       new CamelSnakeInterceptor(),
       new StandardizeTrInterceptor(reflector),

@@ -14,6 +14,7 @@ import {
    EmailNotVerifiedException,
    InvalidCredentialsException,
 } from '@exceptions/auth.exception';
+import { GoogleProfile } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
@@ -205,5 +206,35 @@ export class AuthService {
     */
    async completePasswordReset(token: string, newPassword: string) {
       return this.usersService.resetPassword(token, newPassword);
+   }
+
+   async handleGoogleAuth(profile: GoogleProfile, res: Response) {
+      let user = await this.usersService.findOneByEmail(profile.email);
+
+      if (!user) {
+         user = await this.usersService.createUser({
+            email: profile.email,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            image: profile.photo,
+            password: null,
+            emailVerified: true,
+         });
+      }
+
+      const session = await this.sessionsService.createSession(user.id);
+      const tokens = await this.generateTokens(
+         user.id,
+         session.id,
+         session.token,
+      );
+
+      this.setRefreshTokenCookie(
+         res,
+         tokens.refreshToken,
+         tokens.refreshExpiresIn,
+      );
+
+      return { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn };
    }
 }

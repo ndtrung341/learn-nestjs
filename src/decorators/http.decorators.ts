@@ -1,36 +1,48 @@
-import { applyDecorators, HttpCode, HttpStatus } from '@nestjs/common';
-import { Roles, Public } from './auth.decorators';
-import { Role } from '@constants/app.constants';
+import {
+   applyDecorators,
+   HttpCode,
+   HttpStatus,
+   UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { ResponseMessage } from './response-message.decorator';
 
-interface ApiPublicOptions {
+export interface RouteOptions {
    message?: string;
    statusCode?: HttpStatus;
 }
 
-interface ApiPrivateOptions extends ApiPublicOptions {
-   roles?: Role[];
+export function PublicRoute(options?: RouteOptions | string) {
+   const opts: RouteOptions = normalizeOptions(options);
+
+   const decorators = [HttpCode(opts.statusCode ?? HttpStatus.OK)];
+
+   if (opts.message) {
+      decorators.push(ResponseMessage(opts.message));
+   }
+
+   return applyDecorators(...decorators);
 }
 
-export const ApiPublic = (options: ApiPublicOptions = {}) => {
-   const { message, statusCode = HttpStatus.OK } = options;
-   const decorators = [Public(), HttpCode(statusCode)];
+export function ProtectedRoute(options?: RouteOptions | string) {
+   const opts: RouteOptions = normalizeOptions(options);
 
-   if (message) {
-      decorators.push(ResponseMessage(message));
+   const decorators = [
+      UseGuards(AuthGuard),
+      HttpCode(opts.statusCode ?? HttpStatus.OK),
+   ];
+
+   if (opts.message) {
+      decorators.push(ResponseMessage(opts.message));
    }
 
    return applyDecorators(...decorators);
-};
+}
 
-export const ApiPrivate = (options: ApiPrivateOptions = {}) => {
-   const { message, roles = [], statusCode = HttpStatus.OK } = options;
-
-   const decorators = [Roles(...roles), HttpCode(statusCode)];
-
-   if (message) {
-      decorators.push(ResponseMessage(message));
+function normalizeOptions(options?: RouteOptions | string): RouteOptions {
+   if (typeof options === 'string') {
+      return { message: options };
    }
 
-   return applyDecorators(...decorators);
-};
+   return options ?? {};
+}

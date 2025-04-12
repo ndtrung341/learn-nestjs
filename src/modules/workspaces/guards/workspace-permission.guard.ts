@@ -2,10 +2,11 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { WorkspacesService } from '../workspaces.service';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
-import { WORKSPACE_PERMISSION_KEY } from '@decorators/workspace-permission.decorator';
+import { WORKSPACE_ROLE_KEY } from '@decorators/workspace-role.decorator';
+import { AccessDeniedException } from '@exceptions/auth.exception';
 
 @Injectable()
-export class WorkspacePermissionGuard implements CanActivate {
+export class WorkspaceRoleGuard implements CanActivate {
    constructor(
       private reflector: Reflector,
       private workspacesService: WorkspacesService,
@@ -18,12 +19,16 @@ export class WorkspacePermissionGuard implements CanActivate {
 
       if (!userId || !workspaceId) return false;
 
-      const roles = this.reflector.getAllAndOverride(WORKSPACE_PERMISSION_KEY, [
+      const roles = this.reflector.getAllAndOverride(WORKSPACE_ROLE_KEY, [
          context.getHandler(),
          context.getClass(),
       ]);
 
-      return this.workspacesService.hasPermission(userId, workspaceId, roles);
+      if (!this.workspacesService.hasPermission(userId, workspaceId, roles)) {
+         throw new AccessDeniedException();
+      }
+
+      return true;
    }
 
    private extractWorkspaceId(request: Request) {

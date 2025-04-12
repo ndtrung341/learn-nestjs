@@ -19,13 +19,13 @@ export class UserEntity extends BaseEntity {
    email: string;
 
    @Exclude()
-   @Column()
+   @Column({ nullable: true })
    password: string;
 
-   @Column()
+   @Column({ nullable: true })
    firstName: string;
 
-   @Column()
+   @Column({ nullable: true })
    lastName: string;
 
    @Column({ nullable: true, default: '' })

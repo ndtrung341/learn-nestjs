@@ -34,6 +34,12 @@ export class AuthEnvVariables {
    @IsString()
    @Matches(/^\d+(s|m|h|d|w)$/)
    AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN: string;
+
+   @IsString()
+   AUTH_GOOGLE_CLIENT_ID: string;
+
+   @IsString()
+   AUTH_GOOGLE_CLIENT_SECRET: string;
 }
 
 export const authConfig = registerAs<AuthConfig>('auth', () => {
@@ -52,5 +58,9 @@ export const authConfig = registerAs<AuthConfig>('auth', () => {
       resetPasswordExpiresIn: ms(
          process.env.AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN as ms.StringValue,
       ),
+      google: {
+         clientId: process.env.AUTH_GOOGLE_CLIENT_ID,
+         clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
+      },
    };
 });

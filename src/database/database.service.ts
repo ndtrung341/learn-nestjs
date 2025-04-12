@@ -19,9 +19,6 @@ export class DatabaseService implements TypeOrmOptionsFactory {
          entities: [__dirname + '/../**/*.entity{.ts,.js}'],
          autoLoadEntities: false,
          namingStrategy: new NamingStrategy(),
-         dropSchema: false,
-         keepConnectionAlive: true,
-         logging: true,
       } as TypeOrmModuleOptions;
    }
 }

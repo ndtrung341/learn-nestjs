@@ -21,9 +21,10 @@ import {
 } from './dto/invitation.dto';
 import { InvitationGuard } from './guards/invitation.guard';
 import { InvitationTokenPayload } from './types/invitation-payload';
-import { WorkspacePermission } from '@decorators/workspace-permission.decorator';
+import { WorkspaceRole } from '@decorators/workspace-role.decorator';
 import { WorkspaceMemberRole } from './entities/workspace-member.entity';
-import { WorkspacePermissionGuard } from './guards/workspace-permission.guard';
+import { WorkspaceRoleGuard } from './guards/workspace-permission.guard';
+import { ProtectedRoute } from '@decorators/http.decorators';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -31,16 +32,19 @@ export class WorkspacesController {
 
    // --- Workspace CRUD ---
    @Get()
+   @ProtectedRoute()
    async getUserWorkspaces(@CurrentUser('id') userId: string) {
       return this.workspacesService.getWorkspacesByUserId(userId);
    }
 
    @Get(':id')
+   @ProtectedRoute()
    getWorkspaceById(@Param('id') id: string) {
       return this.workspacesService.getWorkspaceById(id);
    }
 
    @Post()
+   @ProtectedRoute()
    createWorkspace(
       @CurrentUser('sub') ownerId: string,
       @Body() createWorkspaceDto: CreateWorkspaceDto,
@@ -52,8 +56,8 @@ export class WorkspacesController {
    }
 
    @Put(':id')
-   @UseGuards(WorkspacePermissionGuard)
-   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   @ProtectedRoute()
+   @WorkspaceRole(WorkspaceMemberRole.ADMIN)
    updateWorkspace(
       @Param('id') workspaceId: string,
       @Body() updateWorkspaceDto: UpdateWorkspaceDto,
@@ -65,14 +69,16 @@ export class WorkspacesController {
    }
 
    @Delete(':id')
+   @ProtectedRoute()
+   @WorkspaceRole(WorkspaceMemberRole.ADMIN)
    deleteWorkspace(@Param('id') workspaceId: string) {
       return this.workspacesService.deleteWorkspace(workspaceId);
    }
 
    // --- Invitations ---
    @Post(':id/members')
-   @UseGuards(WorkspacePermissionGuard)
-   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   @ProtectedRoute()
+   @WorkspaceRole(WorkspaceMemberRole.ADMIN)
    inviteMembers(
       @CurrentUser('sub') currentUserId: string,
       @Param('id') workspaceId: string,
@@ -87,8 +93,8 @@ export class WorkspacesController {
    }
 
    @Post('invitations/resend')
-   @UseGuards(WorkspacePermissionGuard)
-   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   @ProtectedRoute()
+   @WorkspaceRole(WorkspaceMemberRole.ADMIN)
    resendInvite(
       @CurrentUser('sub') currentUserId: string,
       @Body() dto: ResendInvitationDto,
@@ -101,8 +107,8 @@ export class WorkspacesController {
    }
 
    @Post('invitations/cancel')
-   @UseGuards(WorkspacePermissionGuard)
-   @WorkspacePermission(WorkspaceMemberRole.ADMIN)
+   @ProtectedRoute()
+   @WorkspaceRole(WorkspaceMemberRole.ADMIN)
    cancelInvite(@Body() dto: CancelInvitationDto) {
       return this.workspacesService.cancelInvitation(
          dto.userId,

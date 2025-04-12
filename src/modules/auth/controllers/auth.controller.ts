@@ -4,34 +4,31 @@ import {
    Get,
    HttpStatus,
    Post,
-   Query,
    Res,
    UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 import { CurrentUser } from '@decorators/current-user.decorator';
-import { ApiPrivate, ApiPublic } from '@decorators/http.decorators';
+import { ProtectedRoute, PublicRoute } from '@decorators/http.decorators';
 
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtRefreshGuard } from '../guards/jwt-refresh.guard';
 
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { LoginDto } from '../dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 
-import { JwtRefreshPayload } from './types/jwt-payload.type';
+import { JwtRefreshPayload } from '../types/jwt-payload.type';
 
 @Controller('auth')
 export class AuthController {
-   constructor(private readonly authService: AuthService) {}
+   constructor(private authService: AuthService) {}
 
    @Post('login')
-   @ApiPublic({
-      message: 'Login successful',
-   })
+   @PublicRoute('Login successful')
    async login(
       @Body() loginDto: LoginDto,
       @Res({ passthrough: true }) res: Response,
@@ -40,7 +37,7 @@ export class AuthController {
    }
 
    @Post('register')
-   @ApiPublic({
+   @PublicRoute({
       statusCode: HttpStatus.CREATED,
       message: 'User registered successfully. Please verify your email',
    })
@@ -49,16 +46,13 @@ export class AuthController {
    }
 
    @Post('verify')
-   @ApiPublic({
-      message: 'Email verified successfully',
-   })
+   @PublicRoute('Email verified successfully')
    async verifyEmail(@Body('token') token: string) {
       return this.authService.verifyEmail(token);
    }
 
    @Post('refresh')
    @UseGuards(JwtRefreshGuard)
-   @ApiPublic()
    async refresh(
       @CurrentUser() payload: JwtRefreshPayload,
       @Res({ passthrough: true }) res: Response,
@@ -68,7 +62,7 @@ export class AuthController {
    }
 
    @Get('logout')
-   @ApiPrivate({ message: 'User logged out successfully' })
+   @ProtectedRoute('User logged out successfully')
    async logout(
       @CurrentUser('session') sessionId: string,
       @Res({ passthrough: true }) res: Response,
@@ -77,19 +71,19 @@ export class AuthController {
    }
 
    @Get('me')
-   @ApiPrivate()
+   @ProtectedRoute()
    getCurrentUser(@CurrentUser('sub') id: string) {
       return this.authService.getCurrentUser(id);
    }
 
    @Post('forgot-password')
-   @ApiPublic({ message: 'Password reset email has been sent.' })
+   @PublicRoute('Password reset email has been sent.')
    forgotPassword(@Body() dto: ForgotPasswordDto) {
       return this.authService.initiatePasswordReset(dto.email);
    }
 
    @Post('reset-password')
-   @ApiPublic({ message: 'Reset password successfully' })
+   @PublicRoute('Reset password successfully')
    resetPassword(@Body() dto: ResetPasswordDto) {
       return this.authService.completePasswordReset(dto.token, dto.password);
    }
