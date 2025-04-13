@@ -14,9 +14,11 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.stategy';
 import { GoogleOAuthStrategy } from './strategies/google.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
+import { MicrosoftAuthController } from './controllers/microsoft-auth.controller';
 
 @Module({
-   controllers: [AuthController, GoogleAuthController],
+   controllers: [AuthController, GoogleAuthController, MicrosoftAuthController],
    imports: [UsersModule, PassportModule, MailModule, JwtModule.register({})],
    providers: [
       AuthService,
@@ -24,6 +26,7 @@ import { GoogleOAuthStrategy } from './strategies/google.strategy';
       JwtStrategy,
       JwtRefreshStrategy,
       GoogleOAuthStrategy,
+      MicrosoftStrategy,
    ],
 })
 export class AuthModule {}

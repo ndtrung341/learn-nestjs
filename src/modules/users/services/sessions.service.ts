@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -22,7 +21,6 @@ import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class SessionsService {
    constructor(
-      private configService: ConfigService,
       @Inject(CACHE_MANAGER) private cacheManager: Cache,
       @InjectRepository(SessionEntity)
       private sessionRepository: Repository<SessionEntity>,
@@ -31,14 +29,13 @@ export class SessionsService {
    /**
     * Create a new user session.
     */
-   async createSession(userId: string) {
-      const expiresIn = this.configService.get<number>('auth.refreshExpiresIn');
-
+   async createSession(userId: string, expiresIn: number) {
       const session = this.sessionRepository.create({
          userId,
          token: uuidv4(),
          expiresIn,
       });
+
       return this.sessionRepository.save(session);
    }
 
@@ -101,7 +98,7 @@ export class SessionsService {
    /**
     * Check if a session is valid and active.
     */
-   async validateSessionToken(sessionId: string, token: string) {
+   async validateSession(sessionId: string, token: string) {
       if (await this.isSessionBlacklisted(sessionId)) {
          throw new SessionBlacklistedException();
       }
@@ -117,5 +114,14 @@ export class SessionsService {
       }
 
       return session;
+   }
+
+   /**
+    * Validate and rotate new session if valid.
+    */
+   async validateAndRotateSession(sessionId: string, token: string) {
+      const session = await this.validateSession(sessionId, token);
+
+      return this.rotateSession(session);
    }
 }

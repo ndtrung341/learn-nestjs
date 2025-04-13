@@ -1,28 +1,25 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { GoogleProfile } from '../strategies/google.strategy';
-import { AuthService } from '../auth.service';
-import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { AuthService } from '../auth.service';
 
-@Controller('auth/google')
-@UseGuards(AuthGuard('google'))
-export class GoogleAuthController {
+@Controller('auth/microsoft')
+@UseGuards(AuthGuard('microsoft'))
+export class MicrosoftAuthController {
    constructor(
       private readonly authService: AuthService,
       private readonly configService: ConfigService,
    ) {}
 
    @Get()
-   async googleLogin() {
-      // This route will handle the Google OAuth flow
+   @UseGuards(AuthGuard('microsoft'))
+   async microsoftLogin() {
+      // This route will handle the Microsoft OAuth flow
    }
 
    @Get('redirect')
-   async googleRedirect(
-      @Req() req: { user: GoogleProfile },
-      @Res() res: Response,
-   ) {
+   async microsoftRedirect(@Req() req: any, @Res() res: Response) {
       const { accessToken, expiresIn } =
          await this.authService.handleGoogleAuth(req.user, res);
 

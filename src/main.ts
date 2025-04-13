@@ -11,6 +11,7 @@ import {
    ValidationPipe,
 } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
@@ -19,6 +20,13 @@ async function bootstrap() {
    const reflector = app.get(Reflector);
 
    app.use(cookieParser());
+   app.use(
+      session({
+         secret: 'my-secret',
+         resave: false,
+         saveUninitialized: false,
+      }),
+   );
 
    app.setGlobalPrefix(config.get('app.prefix'));
 

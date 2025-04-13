@@ -1,15 +1,35 @@
 import { registerAs } from '@nestjs/config';
 import validateEnv from '@utils/validate-env';
-import ms from 'ms';
 import { IsString, Matches } from 'class-validator';
+import ms from 'ms';
 
 export type AuthConfig = {
-   secret: string;
-   expiresIn: number;
-   refreshSecret: string;
-   refreshExpiresIn: number;
-   verifyExpiresIn: number;
-   resetPasswordExpiresIn: number;
+   access: {
+      secret: string;
+      expires: number;
+   };
+   refresh: {
+      secret: string;
+      expires: number;
+   };
+   verifyEmail: {
+      secret: string;
+      expires: number;
+   };
+   resetPassword: {
+      secret: string;
+      expires: number;
+   };
+   google: {
+      clientID: string;
+      clientSecret: string;
+      callbackURL: string;
+   };
+   microsoft: {
+      clientID: string;
+      clientSecret: string;
+      callbackURL: string;
+   };
 };
 
 export class AuthEnvVariables {
@@ -40,27 +60,57 @@ export class AuthEnvVariables {
 
    @IsString()
    AUTH_GOOGLE_CLIENT_SECRET: string;
+
+   @IsString()
+   AUTH_GOOGLE_CALLBACK_URL: string;
+
+   @IsString()
+   AUTH_AZURE_CLIENT_ID: string;
+
+   @IsString()
+   AUTH_AZURE_CLIENT_SECRET: string;
+
+   @IsString()
+   AUTH_AZURE_CALLBACK_URL: string;
 }
 
 export const authConfig = registerAs<AuthConfig>('auth', () => {
    validateEnv(process.env, AuthEnvVariables);
 
    return {
-      secret: process.env.AUTH_ACCESS_TOKEN_SECRET,
-      expiresIn: ms(process.env.AUTH_ACCESS_TOKEN_EXPIRES_IN as ms.StringValue),
-      refreshSecret: process.env.AUTH_REFRESH_TOKEN_SECRET,
-      refreshExpiresIn: ms(
-         process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN as ms.StringValue,
-      ),
-      verifyExpiresIn: ms(
-         process.env.AUTH_VERIFY_TOKEN_EXPIRES_IN as ms.StringValue,
-      ),
-      resetPasswordExpiresIn: ms(
-         process.env.AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN as ms.StringValue,
-      ),
+      access: {
+         secret: process.env.AUTH_ACCESS_TOKEN_SECRET,
+         expires: ms(
+            process.env.AUTH_ACCESS_TOKEN_EXPIRES_IN as ms.StringValue,
+         ),
+      },
+      refresh: {
+         secret: process.env.AUTH_REFRESH_TOKEN_SECRET,
+         expires: ms(
+            process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN as ms.StringValue,
+         ),
+      },
+      verifyEmail: {
+         secret: '',
+         expires: ms(
+            process.env.AUTH_VERIFY_TOKEN_EXPIRES_IN as ms.StringValue,
+         ),
+      },
+      resetPassword: {
+         secret: '',
+         expires: ms(
+            process.env.AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN as ms.StringValue,
+         ),
+      },
       google: {
-         clientId: process.env.AUTH_GOOGLE_CLIENT_ID,
+         clientID: process.env.AUTH_GOOGLE_CLIENT_ID,
          clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
+         callbackURL: process.env.AUTH_GOOGLE_CALLBACK_URL,
+      },
+      microsoft: {
+         clientID: process.env.AUTH_AZURE_CLIENT_ID,
+         clientSecret: process.env.AUTH_AZURE_CLIENT_SECRET,
+         callbackURL: process.env.AUTH_AZURE_CALLBACK_URL,
       },
    };
 });

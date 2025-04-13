@@ -40,7 +40,7 @@ export class UsersService {
 
       const verifyToken = uuidv4();
       const verifyExpires = dayjs()
-         .add(this.configService.get('auth.verifyExpiresIn'))
+         .add(this.configService.get('auth.verifyEmail.expires'))
          .toDate();
 
       const newUser = this.userRepo.create({
@@ -109,7 +109,7 @@ export class UsersService {
    async generatePasswordResetToken(email: string) {
       const resetToken = uuidv4();
       const resetExpires = dayjs()
-         .add(this.configService.get('auth.resetPasswordExpiresIn'))
+         .add(this.configService.get('auth.resetPassword.expires'))
          .toDate();
 
       const { affected } = await this.userRepo.update(

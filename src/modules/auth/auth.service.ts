@@ -18,13 +18,27 @@ import { GoogleProfile } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
+   private readonly accessTokenSecret: string;
+   private readonly accessTokenExpires: number;
+
+   private readonly refreshTokenSecret: string;
+   private readonly refreshTokenExpires: number;
+
    constructor(
       private configService: ConfigService,
       private usersService: UsersService,
       private sessionsService: SessionsService,
       private mailService: MailService,
       private jwtService: JwtService,
-   ) {}
+   ) {
+      const { access, refresh } = configService.get('auth');
+
+      this.accessTokenSecret = access.secret;
+      this.accessTokenExpires = access.expires;
+
+      this.refreshTokenSecret = refresh.secret;
+      this.refreshTokenExpires = refresh.expires;
+   }
 
    /**
     * Retrieves the current user.
@@ -54,23 +68,22 @@ export class AuthService {
       if (!user) throw new InvalidCredentialsException();
       if (!user.emailVerified) throw new EmailNotVerifiedException();
 
-      const session = await this.sessionsService.createSession(user.id);
-      const tokens = await this.generateTokens(
+      const session = await this.sessionsService.createSession(
+         user.id,
+         this.refreshTokenExpires,
+      );
+
+      const { accessToken, expiresIn } = await this.generateTokens(
          user.id,
          session.id,
          session.token,
-      );
-
-      this.setRefreshTokenCookie(
          res,
-         tokens.refreshToken,
-         tokens.refreshExpiresIn,
       );
 
       return {
          user,
-         accessToken: tokens.accessToken,
-         expiresIn: tokens.expiresIn,
+         accessToken,
+         expiresIn,
       };
    }
 
@@ -107,18 +120,6 @@ export class AuthService {
    }
 
    /**
-    * Validate refresh token and rotate session if valid.
-    */
-   async validateAndRotateSession(sessionId: string, token: string) {
-      const session = await this.sessionsService.validateSessionToken(
-         sessionId,
-         token,
-      );
-
-      return this.sessionsService.rotateSession(session);
-   }
-
-   /**
     * Reissues authentication tokens if the session is valid.
     */
    async refreshTokens(
@@ -127,23 +128,12 @@ export class AuthService {
       token: string,
       res: Response,
    ) {
-      const session = await this.validateAndRotateSession(sessionId, token);
-      const tokens = await this.generateTokens(
-         userId,
-         session.id,
-         session.token,
+      const session = await this.sessionsService.validateAndRotateSession(
+         sessionId,
+         token,
       );
 
-      this.setRefreshTokenCookie(
-         res,
-         tokens.refreshToken,
-         tokens.refreshExpiresIn,
-      );
-
-      return {
-         accessToken: tokens.accessToken,
-         expiresIn: tokens.expiresIn,
-      };
+      return this.generateTokens(userId, session.id, session.token, res);
    }
 
    /**
@@ -153,43 +143,44 @@ export class AuthService {
       userId: string,
       sessionId: string,
       token: string,
+      res: Response,
    ) {
       const accessPayload = { sub: userId, session: sessionId };
       const refreshPayload = { sub: userId, session: sessionId, token };
 
-      const secret = this.configService.get('auth.secret');
-      const expiresIn = this.configService.get('auth.expiresIn');
-      const refreshSecret = this.configService.get('auth.refreshSecret');
-      const refreshExpiresIn = this.configService.get('auth.refreshExpiresIn');
-
       const [accessToken, refreshToken] = await Promise.all([
          this.jwtService.signAsync(accessPayload, {
-            secret,
-            expiresIn: expiresIn / 1000,
+            secret: this.accessTokenSecret,
+            expiresIn: this.accessTokenExpires / 1000,
          }),
          this.jwtService.signAsync(refreshPayload, {
-            secret: refreshSecret,
-            expiresIn: refreshExpiresIn / 1000,
+            secret: this.refreshTokenSecret,
+            expiresIn: this.refreshTokenExpires / 1000,
          }),
       ]);
 
+      res.cookie('refresh_token', token, {
+         httpOnly: true,
+         sameSite: 'strict',
+         path: `${this.configService.get('app.prefix')}/auth/refresh`,
+         maxAge: this.refreshTokenExpires,
+      });
+
       return {
          accessToken,
-         expiresIn,
-         refreshToken,
-         refreshExpiresIn,
+         expiresIn: this.accessTokenExpires,
       };
    }
 
    /**
     * Sets the refresh token in HTTP-only cookies.
     */
-   private setRefreshTokenCookie(res: Response, token: string, maxAge: number) {
+   private setRefreshTokenCookie(res: Response, token: string) {
       res.cookie('refresh_token', token, {
          httpOnly: true,
          sameSite: 'strict',
          path: `${this.configService.get('app.prefix')}/auth/refresh`,
-         maxAge,
+         maxAge: this.refreshTokenExpires,
       });
    }
 
@@ -222,19 +213,11 @@ export class AuthService {
          });
       }
 
-      const session = await this.sessionsService.createSession(user.id);
-      const tokens = await this.generateTokens(
+      const session = await this.sessionsService.createSession(
          user.id,
-         session.id,
-         session.token,
+         this.refreshTokenExpires,
       );
 
-      this.setRefreshTokenCookie(
-         res,
-         tokens.refreshToken,
-         tokens.refreshExpiresIn,
-      );
-
-      return { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn };
+      return this.generateTokens(user.id, session.id, session.token, res);
    }
 }
