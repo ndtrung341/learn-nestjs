@@ -37,24 +37,6 @@ export class UserEntity extends BaseEntity {
    @Column({ default: false })
    emailVerified: boolean;
 
-   @Exclude()
-   @Index({ unique: true })
-   @Column({ type: 'uuid', nullable: true })
-   verifyToken: string | null;
-
-   @Exclude()
-   @Column({ type: 'timestamptz', nullable: true })
-   verifyExpires: Date | null;
-
-   @Exclude()
-   @Index({ unique: true })
-   @Column({ type: 'uuid', nullable: true })
-   resetToken: string | null;
-
-   @Exclude()
-   @Column({ type: 'timestamptz', nullable: true })
-   resetExpires: Date | null;
-
    @BeforeInsert()
    @BeforeUpdate()
    async hashPass() {

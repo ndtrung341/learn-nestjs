@@ -8,3 +8,8 @@ export type JwtAccessPayload = {
 export type JwtRefreshPayload = JwtAccessPayload & {
    token: string;
 };
+
+export type JwtResetPasswordPayload = {
+   sub: string;
+   jti: string;
+};

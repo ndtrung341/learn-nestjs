@@ -4,12 +4,7 @@ export enum Environment {
    TEST = 'test',
 }
 
-export enum Role {
-   ADMIN = 'ADMIN', // Administrator with full permissions
-   MEMBER = 'MEMBER', // Member who can edit cards
-   OBSERVER = 'OBSERVER', // Observer with view-only access
-}
-
 export enum CACHE_KEY {
    SESSION_BLACKLIST = 'session-blacklist:$sid',
+   PASSWORD_RESET = 'password-reset:%s:%s',
 }

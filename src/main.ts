@@ -2,7 +2,6 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { GlobalExceptionFilter } from '@filters/global-exception.filter';
-import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { CamelSnakeInterceptor } from '@interceptors/camel-snake.interceptor';
 import { StandardizeTrInterceptor } from '@interceptors/standardize.interceptor';
 import {
@@ -11,7 +10,6 @@ import {
    ValidationPipe,
 } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
@@ -20,13 +18,6 @@ async function bootstrap() {
    const reflector = app.get(Reflector);
 
    app.use(cookieParser());
-   app.use(
-      session({
-         secret: 'my-secret',
-         resave: false,
-         saveUninitialized: false,
-      }),
-   );
 
    app.setGlobalPrefix(config.get('app.prefix'));
 

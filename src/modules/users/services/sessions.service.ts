@@ -76,7 +76,7 @@ export class SessionsService {
     */
    async isSessionBlacklisted(sessionId: string) {
       const result = await this.cacheManager.get<boolean>(
-         createCacheKey(CACHE_KEY.SESSION_BLACKLIST, sessionId),
+         createCacheKey('SESSION_BLACKLIST', sessionId),
       );
 
       return Boolean(result);
@@ -89,7 +89,7 @@ export class SessionsService {
       const ttl = session.expiresIn - dayjs().diff(session.updatedAt, 'ms');
       await this.sessionRepository.update(session.id, { invalid: true });
       await this.cacheManager.set(
-         createCacheKey(CACHE_KEY.SESSION_BLACKLIST, session.id),
+         createCacheKey('SESSION_BLACKLIST', session.id),
          true,
          ttl,
       );

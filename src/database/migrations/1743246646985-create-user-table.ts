@@ -16,29 +16,13 @@ export class CreateUserTable1743246646985 implements MigrationInterface {
                 "bio" character varying DEFAULT '',
                 "image" character varying DEFAULT '',
                 "email_verified" boolean NOT NULL DEFAULT false,
-                "verify_token" uuid,
-                "verify_expires" TIMESTAMP WITH TIME ZONE,
-                "reset_token" uuid,
-                "reset_expires" TIMESTAMP WITH TIME ZONE,
                 CONSTRAINT "UQ_user_email" UNIQUE ("email"),
                 CONSTRAINT "PK_user" PRIMARY KEY ("id")
             )
         `);
-      await queryRunner.query(`
-            CREATE UNIQUE INDEX "IDX_user_verify_token" ON "user" ("verify_token")
-        `);
-      await queryRunner.query(`
-            CREATE UNIQUE INDEX "IDX_user_reset_token" ON "user" ("reset_token")
-        `);
    }
 
    public async down(queryRunner: QueryRunner): Promise<void> {
-      await queryRunner.query(`
-            DROP INDEX "public"."IDX_user_reset_token"
-        `);
-      await queryRunner.query(`
-            DROP INDEX "public"."IDX_user_verify_token"
-        `);
       await queryRunner.query(`
             DROP TABLE "user"
         `);

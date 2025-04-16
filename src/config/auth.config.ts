@@ -12,7 +12,7 @@ export type AuthConfig = {
       secret: string;
       expires: number;
    };
-   verifyEmail: {
+   verify: {
       secret: string;
       expires: number;
    };
@@ -34,26 +34,32 @@ export type AuthConfig = {
 
 export class AuthEnvVariables {
    @IsString()
-   AUTH_ACCESS_TOKEN_SECRET: string;
+   AUTH_ACCESS_SECRET: string;
 
    @IsString()
    @Matches(/^\d+(s|m|h|d|w)$/)
-   AUTH_ACCESS_TOKEN_EXPIRES_IN: string;
+   AUTH_ACCESS_EXPIRES_IN: string;
 
    @IsString()
-   AUTH_REFRESH_TOKEN_SECRET: string;
-
-   @IsString()
-   @Matches(/^\d+(s|m|h|d|w)$/)
-   AUTH_REFRESH_TOKEN_EXPIRES_IN: string;
+   AUTH_REFRESH_SECRET: string;
 
    @IsString()
    @Matches(/^\d+(s|m|h|d|w)$/)
-   AUTH_VERIFY_TOKEN_EXPIRES_IN: string;
+   AUTH_REFRESH_EXPIRES_IN: string;
+
+   @IsString()
+   AUTH_VERIFY_EMAIL_SECRET: string;
 
    @IsString()
    @Matches(/^\d+(s|m|h|d|w)$/)
-   AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN: string;
+   AUTH_VERIFY_EMAIL_EXPIRES_IN: string;
+
+   @IsString()
+   AUTH_PASSWORD_RESET_SECRET: string;
+
+   @IsString()
+   @Matches(/^\d+(s|m|h|d|w)$/)
+   AUTH_PASSWORD_RESET_EXPIRES_IN: string;
 
    @IsString()
    AUTH_GOOGLE_CLIENT_ID: string;
@@ -79,27 +85,23 @@ export const authConfig = registerAs<AuthConfig>('auth', () => {
 
    return {
       access: {
-         secret: process.env.AUTH_ACCESS_TOKEN_SECRET,
-         expires: ms(
-            process.env.AUTH_ACCESS_TOKEN_EXPIRES_IN as ms.StringValue,
-         ),
+         secret: process.env.AUTH_ACCESS_SECRET,
+         expires: ms(process.env.AUTH_ACCESS_EXPIRES_IN as ms.StringValue),
       },
       refresh: {
-         secret: process.env.AUTH_REFRESH_TOKEN_SECRET,
-         expires: ms(
-            process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN as ms.StringValue,
-         ),
+         secret: process.env.AUTH_REFRESH_SECRET,
+         expires: ms(process.env.AUTH_REFRESH_EXPIRES_IN as ms.StringValue),
       },
-      verifyEmail: {
-         secret: '',
+      verify: {
+         secret: process.env.AUTH_VERIFY_EMAIL_SECRET,
          expires: ms(
-            process.env.AUTH_VERIFY_TOKEN_EXPIRES_IN as ms.StringValue,
+            process.env.AUTH_VERIFY_EMAIL_EXPIRES_IN as ms.StringValue,
          ),
       },
       resetPassword: {
-         secret: '',
+         secret: process.env.AUTH_PASSWORD_RESET_SECRET,
          expires: ms(
-            process.env.AUTH_RESET_PASSWORD_TOKEN_EXPIRES_IN as ms.StringValue,
+            process.env.AUTH_PASSWORD_RESET_EXPIRES_IN as ms.StringValue,
          ),
       },
       google: {

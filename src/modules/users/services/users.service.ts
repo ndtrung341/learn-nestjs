@@ -34,20 +34,12 @@ export class UsersService {
     */
    async createUser(dto: CreateUserDto) {
       const existingUser = await this.findOneByEmail(dto.email);
+
       if (existingUser) {
          throw new EmailAlreadyExistsException();
       }
 
-      const verifyToken = uuidv4();
-      const verifyExpires = dayjs()
-         .add(this.configService.get('auth.verifyEmail.expires'))
-         .toDate();
-
-      const newUser = this.userRepo.create({
-         ...dto,
-         verifyToken,
-         verifyExpires,
-      });
+      const newUser = this.userRepo.create(dto);
 
       return this.userRepo.save(newUser);
    }
@@ -79,16 +71,16 @@ export class UsersService {
     * Find a user by ID.
     */
    async findOneById(id: string) {
-      return this.userRepo.findOneByOrFail({ id });
+      return this.userRepo.findOneBy({ id });
    }
 
    /**
     * Verify a user's email using a token.
     */
-   async verifyEmailToken(token: string) {
-      const user = await this.userRepo.findOneBy({ verifyToken: token });
+   async verifyUser(id: string) {
+      const user = await this.findOneById(id);
 
-      if (!user || dayjs().isAfter(user.verifyExpires)) {
+      if (!user) {
          throw new InvalidVerificationTokenException();
       }
 
@@ -96,48 +88,12 @@ export class UsersService {
          throw new EmailAlreadyVerifiedException();
       }
 
-      return this.userRepo.update(user.id, {
-         verifyToken: null,
-         verifyExpires: null,
+      return this.userRepo.update(id, {
          emailVerified: true,
       });
    }
 
-   /**
-    * Generates a password reset token.
-    */
-   async generatePasswordResetToken(email: string) {
-      const resetToken = uuidv4();
-      const resetExpires = dayjs()
-         .add(this.configService.get('auth.resetPassword.expires'))
-         .toDate();
-
-      const { affected } = await this.userRepo.update(
-         { email },
-         { resetToken, resetExpires },
-      );
-
-      if (!affected) {
-         throw new UserNotFoundException();
-      }
-
-      return resetToken;
-   }
-
-   /**
-    * Reset the user's password using reset token.
-    */
-   async resetPassword(token: string, newPassword: string) {
-      const user = await this.userRepo.findOneBy({ resetToken: token });
-
-      if (!user || dayjs().isAfter(user.resetExpires)) {
-         throw new InvalidResetPasswordTokenException();
-      }
-
-      user.password = newPassword;
-      user.resetToken = null;
-      user.resetExpires = null;
-
-      await this.userRepo.save(user);
+   async updatePassword(email: string, newPassword: string) {
+      return this.userRepo.update({ email }, { password: newPassword });
    }
 }

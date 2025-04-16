@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Response } from 'express';
 
 import { UsersService } from '@modules/users/services/users.service';
 import { SessionsService } from '@modules/users/services/sessions.service';
 import { MailService } from '@modules/mail/mail.service';
 
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
 
 import {
    EmailNotVerifiedException,
    InvalidCredentialsException,
 } from '@exceptions/auth.exception';
-import { GoogleProfile } from './strategies/google.strategy';
+import { InvalidVerificationTokenException } from '@exceptions/token.exception';
 
 @Injectable()
 export class AuthService {
@@ -24,20 +25,27 @@ export class AuthService {
    private readonly refreshTokenSecret: string;
    private readonly refreshTokenExpires: number;
 
+   private readonly verifyTokenSecret: string;
+   private readonly verifyTokenExpires: number;
+
    constructor(
       private configService: ConfigService,
       private usersService: UsersService,
       private sessionsService: SessionsService,
-      private mailService: MailService,
-      private jwtService: JwtService,
+      private mailer: MailService,
+      private jwt: JwtService,
+      @Inject(CACHE_MANAGER) private cacheManager: Cache,
    ) {
-      const { access, refresh } = configService.get('auth');
+      const { access, refresh, verify } = configService.get('auth');
 
       this.accessTokenSecret = access.secret;
       this.accessTokenExpires = access.expires;
 
       this.refreshTokenSecret = refresh.secret;
       this.refreshTokenExpires = refresh.expires;
+
+      this.verifyTokenSecret = verify.secret;
+      this.verifyTokenExpires = verify.expires;
    }
 
    /**
@@ -52,10 +60,15 @@ export class AuthService {
     */
    async register(dto: RegisterDto) {
       const user = await this.usersService.createUser(dto);
-      await this.mailService.sendVerificationEmail(
-         user.email,
-         user.verifyToken,
+      const verifyToken = await this.jwt.signAsync(
+         {},
+         {
+            secret: this.verifyTokenSecret,
+            subject: user.id,
+            expiresIn: this.verifyTokenExpires / 1000,
+         },
       );
+      await this.mailer.sendVerificationEmail(user.email, verifyToken);
       return user;
    }
 
@@ -107,7 +120,8 @@ export class AuthService {
     * Verifies a user's email
     */
    async verifyEmail(token: string) {
-      await this.usersService.verifyEmailToken(token);
+      const payload = await this.validateVerifyToken(token);
+      await this.usersService.verifyUser(payload.sub);
    }
 
    /**
@@ -137,69 +151,9 @@ export class AuthService {
    }
 
    /**
-    * Generates access and refresh tokens.
+    * Handles authentication via OAuth providers.
     */
-   private async generateTokens(
-      userId: string,
-      sessionId: string,
-      token: string,
-      res: Response,
-   ) {
-      const accessPayload = { sub: userId, session: sessionId };
-      const refreshPayload = { sub: userId, session: sessionId, token };
-
-      const [accessToken, refreshToken] = await Promise.all([
-         this.jwtService.signAsync(accessPayload, {
-            secret: this.accessTokenSecret,
-            expiresIn: this.accessTokenExpires / 1000,
-         }),
-         this.jwtService.signAsync(refreshPayload, {
-            secret: this.refreshTokenSecret,
-            expiresIn: this.refreshTokenExpires / 1000,
-         }),
-      ]);
-
-      res.cookie('refresh_token', token, {
-         httpOnly: true,
-         sameSite: 'strict',
-         path: `${this.configService.get('app.prefix')}/auth/refresh`,
-         maxAge: this.refreshTokenExpires,
-      });
-
-      return {
-         accessToken,
-         expiresIn: this.accessTokenExpires,
-      };
-   }
-
-   /**
-    * Sets the refresh token in HTTP-only cookies.
-    */
-   private setRefreshTokenCookie(res: Response, token: string) {
-      res.cookie('refresh_token', token, {
-         httpOnly: true,
-         sameSite: 'strict',
-         path: `${this.configService.get('app.prefix')}/auth/refresh`,
-         maxAge: this.refreshTokenExpires,
-      });
-   }
-
-   /**
-    * Initiates password reset process by sending email with reset token.
-    */
-   async initiatePasswordReset(email: string) {
-      const token = await this.usersService.generatePasswordResetToken(email);
-      await this.mailService.sendPasswordResetEmail(email, token);
-   }
-
-   /**
-    * Completes password reset process by verifying token and setting new password.
-    */
-   async completePasswordReset(token: string, newPassword: string) {
-      return this.usersService.resetPassword(token, newPassword);
-   }
-
-   async handleGoogleAuth(profile: GoogleProfile, res: Response) {
+   async handleOAuthLogin(provider: string, profile: any, res: Response) {
       let user = await this.usersService.findOneByEmail(profile.email);
 
       if (!user) {
@@ -218,6 +172,63 @@ export class AuthService {
          this.refreshTokenExpires,
       );
 
-      return this.generateTokens(user.id, session.id, session.token, res);
+      const { accessToken, expiresIn } = await this.generateTokens(
+         user.id,
+         session.id,
+         session.token,
+         res,
+      );
+
+      const redirectURL = `${this.configService.get(
+         'app.frontendURL',
+      )}/auth/callback?token=${accessToken}&expires=${expiresIn}`;
+
+      return redirectURL;
+   }
+
+   /**
+    * Generates access and refresh tokens.
+    */
+   private async generateTokens(
+      userId: string,
+      sessionId: string,
+      token: string,
+      res: Response,
+   ) {
+      const accessPayload = { sub: userId, session: sessionId };
+      const refreshPayload = { sub: userId, session: sessionId, token };
+
+      const [accessToken, refreshToken] = await Promise.all([
+         this.jwt.signAsync(accessPayload, {
+            secret: this.accessTokenSecret,
+            expiresIn: this.accessTokenExpires / 1000,
+         }),
+         this.jwt.signAsync(refreshPayload, {
+            secret: this.refreshTokenSecret,
+            expiresIn: this.refreshTokenExpires / 1000,
+         }),
+      ]);
+
+      res.cookie('refresh_token', refreshToken, {
+         httpOnly: true,
+         sameSite: 'strict',
+         path: `${this.configService.get('app.prefix')}/auth/refresh`,
+         maxAge: this.refreshTokenExpires,
+      });
+
+      return {
+         accessToken,
+         expiresIn: this.accessTokenExpires,
+      };
+   }
+
+   private async validateVerifyToken(token: string) {
+      try {
+         return this.jwt.verifyAsync(token, {
+            secret: this.verifyTokenSecret,
+         });
+      } catch (error) {
+         throw new InvalidVerificationTokenException();
+      }
    }
 }

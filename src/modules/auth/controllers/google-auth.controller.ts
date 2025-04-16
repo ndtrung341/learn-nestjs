@@ -1,6 +1,5 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { GoogleProfile } from '../strategies/google.strategy';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,18 +18,13 @@ export class GoogleAuthController {
    }
 
    @Get('redirect')
-   async googleRedirect(
-      @Req() req: { user: GoogleProfile },
-      @Res() res: Response,
-   ) {
-      const { accessToken, expiresIn } =
-         await this.authService.handleGoogleAuth(req.user, res);
+   async googleRedirect(@Req() req: any, @Res() res: Response) {
+      const redirectURL = await this.authService.handleOAuthLogin(
+         'google',
+         req.user,
+         res,
+      );
 
-      const frontendRedirect = `${this.configService.get(
-         'FRONTEND_URL',
-      )}/auth/callback?token=${accessToken}&expires=${expiresIn}`;
-
-      return res.redirect('/api');
-      return res.redirect(frontendRedirect);
+      return res.redirect(redirectURL);
    }
 }

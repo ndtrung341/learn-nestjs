@@ -11,18 +11,18 @@ enum EmailTemplate {
 
 @Injectable()
 export class MailService {
-   private readonly clientUrl: string;
+   private readonly frontendURL: string;
 
    constructor(
       private readonly config: ConfigService,
       private readonly mailer: MailerService,
    ) {
-      const { clientUrl } = this.config.get('app');
-      this.clientUrl = clientUrl;
+      const { frontendURL } = this.config.get('app');
+      this.frontendURL = frontendURL;
    }
 
    async sendVerificationEmail(email: string, token: string) {
-      const url = `${this.clientUrl}/verification?token=${token}`;
+      const url = `${this.frontendURL}/verification?token=${token}`;
 
       return this.sendEmail(
          email,
@@ -33,7 +33,7 @@ export class MailService {
    }
 
    async sendPasswordResetEmail(email: string, token: string) {
-      const url = `${this.clientUrl}/reset-password?token=${token}`;
+      const url = `${this.frontendURL}/reset-password?token=${token}`;
 
       return this.sendEmail(
          email,
@@ -51,7 +51,7 @@ export class MailService {
       token: string;
    }) {
       const { senderName, senderEmail, email, token, workspaceName } = options;
-      const url = `${this.clientUrl}/invitation?token=${token}`;
+      const url = `${this.frontendURL}/invitation?token=${token}`;
 
       return this.sendEmail(
          email,

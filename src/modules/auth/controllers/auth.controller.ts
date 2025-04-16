@@ -19,13 +19,17 @@ import { RegisterDto } from '../dto/register.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 
 import { JwtRefreshPayload } from '../types/jwt-payload.type';
+import { PasswordResetService } from '../services/password-reset.service';
 
 @Controller('auth')
 export class AuthController {
-   constructor(private authService: AuthService) {}
+   constructor(
+      private authService: AuthService,
+      private passwordResetService: PasswordResetService,
+   ) {}
 
    @Post('login')
    @PublicRoute('Login successful')
@@ -77,14 +81,16 @@ export class AuthController {
    }
 
    @Post('forgot-password')
-   @PublicRoute('Password reset email has been sent.')
+   @PublicRoute(
+      'If your email is registered, you will receive a password reset link',
+   )
    forgotPassword(@Body() dto: ForgotPasswordDto) {
-      return this.authService.initiatePasswordReset(dto.email);
+      return this.passwordResetService.forgotPassword(dto.email);
    }
 
    @Post('reset-password')
-   @PublicRoute('Reset password successfully')
+   @PublicRoute('Password has been reset successfully')
    resetPassword(@Body() dto: ResetPasswordDto) {
-      return this.authService.completePasswordReset(dto.token, dto.password);
+      return this.passwordResetService.resetPassword(dto.token, dto.password);
    }
 }

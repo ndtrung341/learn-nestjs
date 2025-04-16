@@ -1,9 +1,15 @@
 services:
    postgres:
       image: postgres:17
+      container_name: learn-nestjs-postgres
       environment:
          POSTGRES_USER: trung341
          POSTGRES_PASSWORD: Trung@341
          POSTGRES_DB: learn_nestjs
       ports:
          - '5433:5432'
+   redis:
+      image: redis:latest
+      container_name: learn-nestjs-redis
+      ports:
+         - '6379:6379'

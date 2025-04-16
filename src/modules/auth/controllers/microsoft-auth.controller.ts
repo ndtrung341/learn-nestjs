@@ -1,16 +1,12 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Controller('auth/microsoft')
 @UseGuards(AuthGuard('microsoft'))
 export class MicrosoftAuthController {
-   constructor(
-      private readonly authService: AuthService,
-      private readonly configService: ConfigService,
-   ) {}
+   constructor(private readonly authService: AuthService) {}
 
    @Get()
    @UseGuards(AuthGuard('microsoft'))
@@ -20,14 +16,12 @@ export class MicrosoftAuthController {
 
    @Get('redirect')
    async microsoftRedirect(@Req() req: any, @Res() res: Response) {
-      const { accessToken, expiresIn } =
-         await this.authService.handleGoogleAuth(req.user, res);
+      const redirectURL = await this.authService.handleOAuthLogin(
+         'microsoft',
+         req.user,
+         res,
+      );
 
-      const frontendRedirect = `${this.configService.get(
-         'FRONTEND_URL',
-      )}/auth/callback?token=${accessToken}&expires=${expiresIn}`;
-
-      return res.redirect('/api');
-      return res.redirect(frontendRedirect);
+      return res.redirect(redirectURL);
    }
 }
