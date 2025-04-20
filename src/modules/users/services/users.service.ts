@@ -26,7 +26,7 @@ export class UsersService {
    constructor(
       private configService: ConfigService,
       @InjectRepository(UserEntity)
-      private userRepo: Repository<UserEntity>,
+      private userRepository: Repository<UserEntity>,
    ) {}
 
    /**
@@ -39,30 +39,30 @@ export class UsersService {
          throw new EmailAlreadyExistsException();
       }
 
-      const newUser = this.userRepo.create(dto);
+      const newUser = this.userRepository.create(dto);
 
-      return this.userRepo.save(newUser);
+      return this.userRepository.save(newUser);
    }
 
    /**
     * Update user details.
     */
    async updateUser(id: string, dto: UpdateUserDto) {
-      const user = await this.userRepo.findOneBy({ id });
-      return await this.userRepo.save({ ...user, ...dto });
+      const user = await this.userRepository.findOneBy({ id });
+      return await this.userRepository.save({ ...user, ...dto });
    }
 
    /**
     * Find a user by email.
     */
    async findOneByEmail(email: string) {
-      return this.userRepo.findOne({
+      return this.userRepository.findOne({
          where: { email },
       });
    }
 
    async findByEmails(emails: string[]) {
-      return this.userRepo.find({
+      return this.userRepository.find({
          where: { email: In(emails) },
       });
    }
@@ -71,7 +71,7 @@ export class UsersService {
     * Find a user by ID.
     */
    async findOneById(id: string) {
-      return this.userRepo.findOneBy({ id });
+      return this.userRepository.findOneBy({ id });
    }
 
    /**
@@ -88,12 +88,18 @@ export class UsersService {
          throw new EmailAlreadyVerifiedException();
       }
 
-      return this.userRepo.update(id, {
+      return this.userRepository.update(id, {
          emailVerified: true,
       });
    }
 
    async updatePassword(email: string, newPassword: string) {
-      return this.userRepo.update({ email }, { password: newPassword });
+      const user = await this.findOneByEmail(email);
+      user.password = newPassword;
+      return this.userRepository.save(user);
+   }
+
+   async updateAvatar(id: string, path: string) {
+      await this.userRepository.update(id, { image: path });
    }
 }

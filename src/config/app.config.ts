@@ -15,7 +15,7 @@ import ms from 'ms';
 
 type AppConfig = {
    environment: string;
-   url: string;
+   baseURL: string;
    frontendURL: string;
    prefix: string;
    port: number;
@@ -55,7 +55,7 @@ export const appConfig = registerAs<AppConfig>('app', () => {
 
    return {
       environment: process.env.NODE_ENV || Environment.DEVELOPMENT,
-      url: process.env.APP_URL || 'http://localhost:3000',
+      baseURL: process.env.APP_URL || 'http://localhost:3000',
       frontendURL: process.env.FRONTEND_URL || 'http://localhost',
       prefix: process.env.APP_PREFIX || '',
       port: process.env.APP_PORT ? parseInt(process.env.APP_PORT, 10) : 3000,

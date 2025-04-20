@@ -14,6 +14,7 @@ import { CONSTRAINT_ERRORS } from '@constants/constraint-errors.constant';
 import { snakeCase } from '@utils/string';
 import { ConfigService } from '@nestjs/config';
 import { Environment } from '@constants/app.constants';
+import { MulterError } from 'multer';
 
 type ErrorResponse = {
    status: number; // HTTP status code
@@ -42,10 +43,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       let errorResponse: ErrorResponse;
 
       if (exception instanceof UnprocessableEntityException) {
+         console.log(123);
          errorResponse = this.handleUnprocessableEntityException(exception);
       } else if (exception instanceof HttpException) {
+         console.log(456);
          errorResponse = this.handleHttpException(exception);
       } else if (exception instanceof QueryFailedError) {
+         console.log(789);
          errorResponse = this.handleQueryFailedError(exception);
       } else if (exception instanceof EntityNotFoundError) {
          errorResponse = this.handleEntityNotFoundError(exception);
@@ -104,14 +108,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const status = exception.getStatus();
 
       const response = exception.getResponse() as {
-         message: ValidationError[];
+         message: string | ValidationError[];
       };
+
+      const message =
+         typeof response.message === 'string'
+            ? response.message
+            : 'Validation failed';
+
+      const details =
+         typeof response.message === 'string'
+            ? undefined
+            : this.extractValidationErrors(response.message);
 
       return {
          status,
          error: STATUS_CODES[status],
-         message: 'Validation failed',
-         details: this.extractValidationErrors(response.message),
+         message,
+         details,
          timestamp: new Date().toISOString(),
       };
    }

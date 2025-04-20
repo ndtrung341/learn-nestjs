@@ -218,7 +218,7 @@ export class AuthService {
 
       return {
          accessToken,
-         expiresIn: this.accessTokenExpires,
+         expiresIn: this.accessTokenExpires / 1000,
       };
    }
 

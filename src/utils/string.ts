@@ -8,11 +8,11 @@ export const snakeCase = (str: string) => {
    return str.replace(/(?!^)([A-Z])/g, '_$1').toLowerCase();
 };
 
-export function slugify(text: string): string {
+export function slugify(text: string, separator: string = '-'): string {
    return text
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '') // Remove non-word chars
-      .replace(/[\s_-]+/g, '-') // Replace spaces, underscores, dashes with single dash
+      .replace(/[\s_-]+/g, separator) // Replace spaces, underscores, dashes with single dash
       .replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
 }

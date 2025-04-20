@@ -10,18 +10,22 @@ import {
    ValidationPipe,
 } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import path from 'path';
 
 async function bootstrap() {
-   const app = await NestFactory.create(AppModule);
+   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
    const config = app.get(ConfigService);
    const reflector = app.get(Reflector);
 
    app.use(cookieParser());
+   app.useStaticAssets(path.join(__dirname, '..', 'assets'), {
+      prefix: '/assets',
+   });
 
    app.setGlobalPrefix(config.get('app.prefix'));
 
-   // app.useGlobalGuards(new AuthGuard(reflector));
    app.useGlobalInterceptors(
       new CamelSnakeInterceptor(),
       new StandardizeTrInterceptor(reflector),

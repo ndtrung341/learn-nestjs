@@ -211,4 +211,8 @@ export class WorkspacesService {
          workspaceName: workspace.name,
       });
    }
+
+   async updateWorkspaceLogo(id: string, path: string) {
+      await this.workspaceRepository.update(id, { logo: path });
+   }
 }

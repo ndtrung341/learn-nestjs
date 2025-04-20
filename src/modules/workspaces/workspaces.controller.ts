@@ -9,6 +9,8 @@ import {
    UseGuards,
    Req,
    Patch,
+   UseInterceptors,
+   UploadedFile,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
@@ -23,8 +25,12 @@ import { InvitationGuard } from './guards/invitation.guard';
 import { InvitationTokenPayload } from './types/invitation-payload';
 import { WorkspaceRole } from '@decorators/workspace-role.decorator';
 import { WorkspaceMemberRole } from './entities/workspace-member.entity';
-import { WorkspaceRoleGuard } from './guards/workspace-permission.guard';
 import { ProtectedRoute } from '@decorators/http.decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidatorPipe } from '@pipes/file-validator.pipe';
+import { diskStorage } from 'multer';
+import { slugify } from '@utils/string';
+import path from 'path';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -53,6 +59,35 @@ export class WorkspacesController {
          ownerId,
          createWorkspaceDto,
       );
+   }
+
+   @Post(':id')
+   @ProtectedRoute()
+   @UseInterceptors(
+      FileInterceptor('logo', {
+         storage: diskStorage({
+            destination: 'assets/workspace_logos',
+
+            filename: (req, file, callback) => {
+               const ext = path.extname(file.originalname);
+               const basename = path.basename(file.originalname, ext);
+               const filename = `${Date.now()}_${slugify(basename, '_')}${ext}`;
+               callback(null, filename);
+            },
+         }),
+      }),
+   )
+   async updateLogo(
+      @Param('id') workspaceId: string,
+      @UploadedFile(
+         new FileValidatorPipe({ maxSize: 2 * 1024 * 1024, fileType: 'image' }),
+      )
+      file: any,
+   ) {
+      const path = file.path.replace(/\\/g, '/');
+      await this.workspacesService.updateWorkspaceLogo(workspaceId, path);
+
+      return { path };
    }
 
    @Put(':id')

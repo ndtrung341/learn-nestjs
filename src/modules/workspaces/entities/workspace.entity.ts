@@ -37,6 +37,9 @@ export class WorkspaceEntity extends BaseEntity {
    })
    visibility: WorkspaceVisibility;
 
+   @Column({ nullable: true })
+   logo?: string;
+
    @OneToMany(() => WorkspaceMemberEntity, (members) => members.workspace)
    members: WorkspaceMemberEntity[];
 
