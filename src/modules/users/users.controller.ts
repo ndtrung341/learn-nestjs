@@ -1,53 +1,44 @@
 import { ProtectedRoute } from '@decorators/http.decorators';
 import {
+   Body,
    Controller,
-   FileTypeValidator,
-   MaxFileSizeValidator,
    Param,
    Post,
    UploadedFile,
+   UploadedFiles,
    UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import * as path from 'path';
-import { slugify } from '@utils/string';
 import { UsersService } from './services/users.service';
-import { FileValidatorPipe } from '@pipes/file-validator.pipe';
+import {
+   FileInfo,
+   FormDataInterceptor,
+} from '@interceptors/form-data.interceptor';
+import { UploadService } from '@modules/upload/upload.service';
 
-const UPLOAD_DESTINATION = 'assets/profile_photos';
 const MAX_FILE_SIZE = 1024 * 1024;
 const FILE_TYPE = /(png|jpg|jpeg)/;
 
 @Controller('users')
 export class UsersController {
-   constructor(private readonly usersService: UsersService) {}
+   constructor(
+      private readonly usersService: UsersService,
+      private uploadService: UploadService,
+   ) {}
 
    @Post(':id/avatar')
    @ProtectedRoute()
    @UseInterceptors(
-      FileInterceptor('photo', {
-         storage: diskStorage({
-            destination: UPLOAD_DESTINATION,
-            filename: (req, file, callback) => {
-               const ext = path.extname(file.originalname);
-               const basename = path.basename(file.originalname, ext);
-               const filename = `${Date.now()}_${slugify(basename, '_')}${ext}`;
-               callback(null, filename);
-            },
-         }),
+      FormDataInterceptor('photo', {
+         fileSize: 1024 * 1024,
+         fileType: 'image/*',
       }),
    )
    async uploadUserAvatar(
-      @UploadedFile(
-         new FileValidatorPipe({ maxSize: MAX_FILE_SIZE, fileType: FILE_TYPE }),
-      )
-      file: Express.Multer.File,
       @Param('id') userId: string,
+      @UploadedFile() file: FileInfo,
    ) {
-      const path = file.path.replace(/\\/g, '/');
-      await this.usersService.updateAvatar(userId, path);
-
-      return { path };
+      const photo = await this.uploadService.save(file.buffer, file.filename);
+      await this.usersService.updateAvatar(userId, photo);
+      return photo;
    }
 }

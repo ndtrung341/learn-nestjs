@@ -43,13 +43,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       let errorResponse: ErrorResponse;
 
       if (exception instanceof UnprocessableEntityException) {
-         console.log(123);
          errorResponse = this.handleUnprocessableEntityException(exception);
       } else if (exception instanceof HttpException) {
-         console.log(456);
          errorResponse = this.handleHttpException(exception);
       } else if (exception instanceof QueryFailedError) {
-         console.log(789);
          errorResponse = this.handleQueryFailedError(exception);
       } else if (exception instanceof EntityNotFoundError) {
          errorResponse = this.handleEntityNotFoundError(exception);

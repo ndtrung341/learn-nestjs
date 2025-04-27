@@ -99,7 +99,7 @@ export class PasswordResetService {
             secret: this.resetSecret,
          });
       } catch (error) {
-         return null;
+         // return null;
       }
    }
 

@@ -29,7 +29,7 @@ export class FileValidatorPipe implements PipeTransform {
    private validateFileSize(file: any) {
       if (this.options.maxSize && file.size > this.options.maxSize) {
          throw new Error(
-            `File size exceeds the maximum allowed size of ${this.options.maxSize} bytes`,
+            `File size exceeds the limit of ${this.options.maxSize} bytes`,
          );
       }
       return true;

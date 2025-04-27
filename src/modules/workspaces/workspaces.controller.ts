@@ -26,15 +26,15 @@ import { InvitationTokenPayload } from './types/invitation-payload';
 import { WorkspaceRole } from '@decorators/workspace-role.decorator';
 import { WorkspaceMemberRole } from './entities/workspace-member.entity';
 import { ProtectedRoute } from '@decorators/http.decorators';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { FileValidatorPipe } from '@pipes/file-validator.pipe';
-import { diskStorage } from 'multer';
-import { slugify } from '@utils/string';
-import path from 'path';
+import { FormDataInterceptor } from '@interceptors/form-data.interceptor';
+import { UploadService } from '@modules/upload/upload.service';
 
 @Controller('workspaces')
 export class WorkspacesController {
-   constructor(private readonly workspacesService: WorkspacesService) {}
+   constructor(
+      private readonly workspacesService: WorkspacesService,
+      private uploadService: UploadService,
+   ) {}
 
    // --- Workspace CRUD ---
    @Get()
@@ -63,31 +63,14 @@ export class WorkspacesController {
 
    @Post(':id')
    @ProtectedRoute()
-   @UseInterceptors(
-      FileInterceptor('logo', {
-         storage: diskStorage({
-            destination: 'assets/workspace_logos',
-
-            filename: (req, file, callback) => {
-               const ext = path.extname(file.originalname);
-               const basename = path.basename(file.originalname, ext);
-               const filename = `${Date.now()}_${slugify(basename, '_')}${ext}`;
-               callback(null, filename);
-            },
-         }),
-      }),
-   )
+   @UseInterceptors(FormDataInterceptor('logo'))
    async updateLogo(
       @Param('id') workspaceId: string,
-      @UploadedFile(
-         new FileValidatorPipe({ maxSize: 2 * 1024 * 1024, fileType: 'image' }),
-      )
-      file: any,
+      @UploadedFile() file: any,
    ) {
-      const path = file.path.replace(/\\/g, '/');
-      await this.workspacesService.updateWorkspaceLogo(workspaceId, path);
-
-      return { path };
+      const logo = await this.uploadService.save(file.buffer, file.filename);
+      await this.workspacesService.updateWorkspaceLogo(workspaceId, logo);
+      return logo;
    }
 
    @Put(':id')
