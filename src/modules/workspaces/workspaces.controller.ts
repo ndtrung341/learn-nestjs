@@ -27,13 +27,13 @@ import { WorkspaceRole } from '@decorators/workspace-role.decorator';
 import { WorkspaceMemberRole } from './entities/workspace-member.entity';
 import { ProtectedRoute } from '@decorators/http.decorators';
 import { FormDataInterceptor } from '@interceptors/form-data.interceptor';
-import { UploadService } from '@modules/upload/upload.service';
+import { StorageService } from '@modules/storage/storage.service';
 
 @Controller('workspaces')
 export class WorkspacesController {
    constructor(
-      private readonly workspacesService: WorkspacesService,
-      private uploadService: UploadService,
+      private workspacesService: WorkspacesService,
+      private storageService: StorageService,
    ) {}
 
    // --- Workspace CRUD ---
@@ -63,12 +63,17 @@ export class WorkspacesController {
 
    @Post(':id')
    @ProtectedRoute()
-   @UseInterceptors(FormDataInterceptor('logo'))
+   @UseInterceptors(
+      FormDataInterceptor('logo', {
+         maxFileSize: 1024 * 1024,
+         allowedFileType: 'image/(jpeg|png)',
+      }),
+   )
    async updateLogo(
       @Param('id') workspaceId: string,
       @UploadedFile() file: any,
    ) {
-      const logo = await this.uploadService.save(file.buffer, file.filename);
+      const logo = await this.storageService.save(file, 'workspace_logos');
       await this.workspacesService.updateWorkspaceLogo(workspaceId, logo);
       return logo;
    }

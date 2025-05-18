@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtAccessPayload } from '../types/jwt-payload.type';
+import { JwtAccessPayload } from '../interfaces/payload.interface';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()

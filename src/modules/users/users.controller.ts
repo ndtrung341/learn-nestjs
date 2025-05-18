@@ -1,44 +1,47 @@
 import { ProtectedRoute } from '@decorators/http.decorators';
 import {
-   Body,
    Controller,
    Param,
    Post,
    UploadedFile,
-   UploadedFiles,
    UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './services/users.service';
-import {
-   FileInfo,
-   FormDataInterceptor,
-} from '@interceptors/form-data.interceptor';
-import { UploadService } from '@modules/upload/upload.service';
-
-const MAX_FILE_SIZE = 1024 * 1024;
-const FILE_TYPE = /(png|jpg|jpeg)/;
+import { FormDataInterceptor } from '@interceptors/form-data.interceptor';
+import { StorageService } from '@modules/storage/storage.service';
+import { UserNotFoundException } from '@exceptions/user.exception';
 
 @Controller('users')
 export class UsersController {
    constructor(
-      private readonly usersService: UsersService,
-      private uploadService: UploadService,
+      private usersService: UsersService,
+      private storageService: StorageService,
    ) {}
 
    @Post(':id/avatar')
    @ProtectedRoute()
    @UseInterceptors(
       FormDataInterceptor('photo', {
-         fileSize: 1024 * 1024,
-         fileType: 'image/*',
+         maxFileSize: 1024 * 1024,
+         allowedFileType: 'image/(jpeg|png)',
       }),
    )
    async uploadUserAvatar(
       @Param('id') userId: string,
-      @UploadedFile() file: FileInfo,
+      @UploadedFile() file: Express.Multer.File,
    ) {
-      const photo = await this.uploadService.save(file.buffer, file.filename);
+      const user = await this.usersService.findOneById(userId);
+      if (!user) {
+         throw new UserNotFoundException();
+      }
+
+      const photo = await this.storageService.save(file, 'profile_photos');
+      if (user.image) {
+         await this.storageService.delete(user.image);
+      }
+
       await this.usersService.updateAvatar(userId, photo);
+
       return photo;
    }
 }

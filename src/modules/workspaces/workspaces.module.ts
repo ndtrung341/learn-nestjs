@@ -8,7 +8,8 @@ import { UsersModule } from '@modules/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailModule } from '@modules/mail/mail.module';
-import { UploadModule } from '@modules/upload/upload.module';
+import { StorageModule } from '@modules/storage/storage.module';
+import { StorageType } from '@modules/storage/interfaces/storage.interface';
 
 @Module({
    imports: [
@@ -27,8 +28,9 @@ import { UploadModule } from '@modules/upload/upload.module';
       }),
       UsersModule,
       MailModule,
-      UploadModule.register({
-         dest: 'assets/workspace_logos',
+      StorageModule.register({
+         type: StorageType.LOCAL,
+         options: { root: 'assets' },
       }),
    ],
    controllers: [WorkspacesController],

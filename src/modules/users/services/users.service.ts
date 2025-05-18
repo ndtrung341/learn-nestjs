@@ -11,20 +11,12 @@ import {
    EmailAlreadyVerifiedException,
 } from '@exceptions/auth.exception';
 
-import { v4 as uuidv4 } from 'uuid';
-import dayjs from 'dayjs';
-
-import { UserNotFoundException } from '@exceptions/user.exception';
-import {
-   InvalidResetPasswordTokenException,
-   InvalidVerificationTokenException,
-} from '@exceptions/token.exception';
-import { ConfigService } from '@nestjs/config';
+import { InvalidVerificationTokenException } from '@exceptions/token.exception';
+import { StorageService } from '@modules/storage/storage.service';
 
 @Injectable()
 export class UsersService {
    constructor(
-      private configService: ConfigService,
       @InjectRepository(UserEntity)
       private userRepository: Repository<UserEntity>,
    ) {}
@@ -100,6 +92,6 @@ export class UsersService {
    }
 
    async updateAvatar(id: string, path: string) {
-      await this.userRepository.update(id, { image: path });
+      return this.userRepository.update(id, { image: path });
    }
 }

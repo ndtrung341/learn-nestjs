@@ -21,7 +21,7 @@ import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 import { AuthService } from '../services/auth.service';
 
-import { JwtRefreshPayload } from '../types/jwt-payload.type';
+import { JwtRefreshPayload } from '../interfaces/payload.interface';
 import { PasswordResetService } from '../services/password-reset.service';
 
 @Controller('auth')

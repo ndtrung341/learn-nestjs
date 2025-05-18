@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { createCacheKey } from '@utils/cache';
 import { Cache } from 'cache-manager';
 import { v4 as uuidv4 } from 'uuid';
-import { JwtResetPasswordPayload } from '../types/jwt-payload.type';
+import { JwtResetPasswordPayload } from '../interfaces/payload.interface';
 import { RedisStore } from 'cache-manager-ioredis-yet';
 
 @Injectable()
