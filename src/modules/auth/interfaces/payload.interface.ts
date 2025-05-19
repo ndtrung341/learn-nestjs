@@ -11,5 +11,5 @@ export interface JwtRefreshPayload extends JwtAccessPayload {
 
 export interface JwtResetPasswordPayload {
    sub: string;
-   jti: string;
+   hash: string;
 }

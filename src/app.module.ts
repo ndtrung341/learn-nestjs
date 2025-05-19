@@ -16,8 +16,8 @@ import { authConfig } from '@config/auth.config';
 import { dbConfig } from '@config/db.config';
 import { mailConfig } from '@config/mail.config';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
-import { redisStore } from 'cache-manager-ioredis-yet';
 import { redisConfig } from '@config/redis.config';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
    imports: [
@@ -30,11 +30,15 @@ import { redisConfig } from '@config/redis.config';
       CacheModule.registerAsync({
          isGlobal: true,
          inject: [ConfigService],
-         useFactory: async (config: ConfigService) => ({
-            store: await redisStore({
-               host: config.get('redis.host'),
-               port: config.get('redis.port'),
-            }),
+         useFactory: (config: ConfigService) => ({
+            stores: [
+               new KeyvRedis({
+                  socket: {
+                     host: config.get('redis.host'),
+                     port: config.get('redis.port'),
+                  },
+               }),
+            ],
          }),
       }),
       ScheduleModule.forRoot(),
